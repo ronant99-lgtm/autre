@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memphis — Travel Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  :root {
+    --navy: #0f1923;
+    --navy-light: #1a2a38;
+    --navy-card: #162030;
+    --accent: #c9a84c;
+    --accent-glow: rgba(201,168,76,0.15);
+    --text: #e8e0d0;
+    --text-muted: #8a9bb0;
+    --danger: #e05c4b;
+    --success: #4caf7d;
+    --seafood: #7eb3e8;
+    --grocery: #c09ee0;
+    --border: rgba(201,168,76,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+  /* HEADER */
+  header { background: linear-gradient(160deg, #0a1520 0%, var(--navy-light) 100%); border-bottom: 1px solid var(--border); padding: 3rem 2rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% -20%, rgba(201,168,76,0.12) 0%, transparent 65%); pointer-events: none; }
+  .header-kicker { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 400; color: var(--text); line-height: 1.15; }
+  header h1 em { color: var(--accent); font-style: italic; }
+  .header-sub { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; font-weight: 300; }
+  .header-credit { color: var(--text-muted); font-size: 0.78rem; margin-top: 0.8rem; font-weight: 300; font-style: italic; opacity: 0.7; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+  main { padding: 2.5rem 0 4rem; }
+
+  .section-label { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* FILTER TABS */
+  .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .filter-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; padding: 0.4rem 0.9rem; border-radius: 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.35rem; }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+  .filter-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* MAP */
+  .map-section { margin-bottom: 2.5rem; }
+  .map-wrapper { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.4); height: 440px; position: relative; background: var(--navy-light); }
+  #map { width: 100%; height: 100%; z-index: 1; }
+
+  /* Leaflet popup styling */
+  .leaflet-popup-content-wrapper { background: var(--navy-card) !important; color: var(--text) !important; border: 1px solid var(--border) !important; border-radius: 10px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important; }
+  .leaflet-popup-tip { background: var(--navy-card) !important; border: 1px solid var(--border) !important; }
+  .leaflet-popup-content { margin: 12px 14px !important; font-family: 'DM Sans', sans-serif !important; font-size: 13px !important; }
+  .popup-title { font-family: 'DM Serif Display', serif; font-size: 14px; font-weight: 400; margin-bottom: 4px; }
+  .popup-info { color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+  .popup-link { display: inline-block; margin-top: 6px; color: var(--accent); font-weight: 500; font-size: 12px; text-decoration: none; }
+  .popup-link:hover { text-decoration: underline; }
+
+  /* Legend */
+  .map-legend { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; margin-top: 0.8rem; font-size: 0.78rem; color: var(--text-muted); }
+  .legend-item { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; transition: opacity 0.2s; }
+  .legend-item:hover { opacity: 0.8; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .zone-advisory { background: rgba(224,92,75,0.08); border: 1px solid rgba(224,92,75,0.25); border-radius: 10px; padding: 1rem 1.2rem; margin-top: 1rem; font-size: 0.87rem; color: var(--text); display: flex; gap: 0.75rem; align-items: flex-start; }
+  .zone-advisory .icon { font-size: 1.1rem; flex-shrink: 0; }
+  .zone-advisory strong { color: var(--danger); }
+
+  /* CARDS */
+  .grid { display: grid; gap: 1rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  .card { background: var(--navy-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.4rem; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; cursor: default; }
+  .card:hover { border-color: rgba(201,168,76,0.4); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .card.highlight { border-color: var(--accent); box-shadow: 0 0 20px rgba(201,168,76,0.15); }
+
+  .card-badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.67rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 20px; margin-bottom: 0.7rem; }
+  .badge-activity { background: rgba(76,175,125,0.12); color: var(--success); border: 1px solid rgba(76,175,125,0.2); }
+  .badge-resto    { background: rgba(201,168,76,0.12); color: var(--accent);  border: 1px solid rgba(201,168,76,0.2); }
+  .badge-takeaway { background: rgba(100,140,200,0.12); color: #7eb3e8; border: 1px solid rgba(100,140,200,0.2); }
+  .badge-grocery  { background: rgba(180,120,200,0.12); color: #c09ee0; border: 1px solid rgba(180,120,200,0.2); }
+
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; font-weight: 400; color: var(--text); margin-bottom: 0.4rem; line-height: 1.3; }
+  .card p { color: var(--text-muted); font-size: 0.86rem; line-height: 1.55; font-weight: 300; }
+  .card .valerie-note { margin-top: 0.5rem; padding: 0.5rem 0.7rem; background: rgba(201,168,76,0.06); border-left: 2px solid var(--accent); border-radius: 0 6px 6px 0; font-size: 0.82rem; color: var(--text-muted); font-style: italic; }
+  .card .valerie-note::before { content: '💬 '; }
+
+  .card-meta { display: flex; align-items: center; gap: 1rem; margin-top: 0.9rem; flex-wrap: wrap; }
+
+  .card-link { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 500; color: var(--accent); text-decoration: none; padding: 0.3rem 0.7rem; border: 1px solid var(--border); border-radius: 6px; transition: background 0.15s, border-color 0.15s; }
+  .card-link:hover { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.4); }
+  .card-link svg { width: 11px; height: 11px; }
+
+  .map-link { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 400; color: var(--text-muted); text-decoration: none; padding: 0.25rem 0.55rem; border: 1px solid rgba(138,155,176,0.2); border-radius: 6px; transition: all 0.15s; }
+  .map-link:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .rating { font-size: 0.8rem; color: var(--text-muted); }
+  .rating span { color: var(--accent); }
+
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; color: var(--text); margin-bottom: 1.2rem; margin-top: 2.5rem; }
+
+  footer { text-align: center; padding: 1.5rem; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--text-muted); font-weight: 300; }
+
+  /* Animations */
+  .card { opacity: 0; animation: fadeUp 0.5s ease forwards; }
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+  .card:nth-child(6) { animation-delay: 0.3s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .map-wrapper { height: 300px; }
+    header { padding: 1.8rem 1rem 1.5rem; }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body { background: white; color: #1a1a1a; }
+    .map-section, .filter-bar { display: none; }
+    .card { break-inside: avoid; border-color: #ccc; background: #fafafa; }
+    header { background: white; border-bottom: 2px solid #c9a84c; }
+    header h1, .header-kicker { color: #1a1a1a; }
+    header h1 em { color: #8b6914; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-kicker">Travel Guide · SJCRH Observership 2026</div>
+  <h1>Memphis, <em>Tennessee</em></h1>
+  <p class="header-sub">Activities · Restaurants · Grocery · Practical Tips</p>
+  <p class="header-credit">Based on recommendations by Valerie Groben, St. Jude Children's Research Hospital</p>
+</header>
+
+<main>
+<div class="container">
+
+  <!-- MAP -->
+  <section class="map-section">
+    <div class="section-label">Interactive Map</div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="activity"><span class="filter-dot" style="background:#4caf7d"></span> Activities</button>
+      <button class="filter-btn" data-cat="restaurant"><span class="filter-dot" style="background:#c9a84c"></span> Restaurants</button>
+      <button class="filter-btn" data-cat="takeout"><span class="filter-dot" style="background:#7eb3e8"></span> Takeout</button>
+      <button class="filter-btn" data-cat="grocery"><span class="filter-dot" style="background:#c09ee0"></span> Grocery</button>
+      <button class="filter-btn" data-cat="avoid"><span class="filter-dot" style="background:#e05c4b"></span> Avoid</button>
+    </div>
+
+    <div class="map-wrapper">
+      <div id="map"></div>
+    </div>
+
+    <div class="map-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#4caf7d"></span> Activities</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c9a84c"></span> Restaurants</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#7eb3e8"></span> Takeout</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c09ee0"></span> Grocery</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#e05c4b"></span> Avoid</span>
+      <span style="font-size:0.74rem;color:var(--text-muted);margin-left:auto;">Click any marker for details</span>
+    </div>
+
+    <div class="zone-advisory">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Area to avoid</strong> — Do not shop or get gas at the <strong>Poplar &amp; Highland intersection</strong>. Head further east on Poplar (past Highland) or use stores on <strong>Union Avenue</strong> downtown. Miss Cordelia's on Mud Island is the best option near the center.
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTIVITIES -->
+  <h2 class="section-title">🗺 Activities &amp; Places to See</h2>
+  <div class="section-label">Must-sees</div>
+  <div class="grid grid-2">
+
+    <div class="card" data-place="civil-rights">
+      <span class="card-badge badge-activity">🎖 Must-see</span>
+      <h3>National Civil Rights Museum</h3>
+      <p>Located in the historic Lorraine Motel, site of MLK's assassination. Deeply moving and immersive. Plan 3–4 hours. Free parking nearby. <em>Closed on Tuesdays.</em></p>
+      <div class="valerie-note">A must visit while you are here. Incredibly disturbing look at history but the museum is done so well.</div>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.civilrightsmuseum.org" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1344,-90.0576)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.9 · 14,000 reviews</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="shelby-farms">
+      <span class="card-badge badge-activity">🌳 Outdoors</span>
+      <h3>Shelby Farms Park</h3>
+      <p>4,500 acres of green space in East Memphis (~20 min from downtown). Trails, lake, playground, restaurants inside the park. Perfect for a family weekend outing.</p>
+      <div class="valerie-note">A beautiful park — tons of trails, walking paths, restaurants inside the park. A great place to get outside on the weekend.</div>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.shelbyfarmspark.org" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1387,-89.8323)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.8 · 12,000 reviews</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="botanic">
+      <span class="card-badge badge-activity">🌸 Nature</span>
+      <h3>Memphis Botanic Garden</h3>
+      <p>Beautiful botanical gardens. Currently featuring a giant TROLL sculpture exhibit — great with kids. Open daily 9am–6pm.</p>
+      <div class="valerie-note">It's beautiful — they have a new exhibit with giant TROLLS!</div>
+      <div class="card-meta">
+        <a class="card-link" href="https://membg.org" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1108,-89.9177)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.7 · 3,000 reviews</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="zoo">
+      <span class="card-badge badge-activity">🦁 Zoo</span>
+      <h3>Memphis Zoo</h3>
+      <p>One of the best zoos in the country. 3,500+ animals, splash pad, sea lion shows. Open 9am–5pm (6pm on Saturdays).</p>
+      <div class="valerie-note">It's a great zoo! Must see.</div>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.memphiszoo.org" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1502,-89.9942)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.6 · 16,000 reviews</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RESTAURANTS -->
+  <h2 class="section-title">🍽 Restaurants</h2>
+  <div class="section-label">Valerie's favorites</div>
+  <div class="grid grid-3">
+
+    <div class="card" data-place="catherine-marys">
+      <span class="card-badge badge-resto">🍝 Italian</span>
+      <h3>Catherine &amp; Mary's</h3>
+      <p>Refined Italian in the South Main district. Dinner only, Mon–Sun 4:00–10:00pm. Valet parking available Mon–Sat.</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://catherineandmarys.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1388,-90.0557)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.5</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="hog-hominy">
+      <span class="card-badge badge-resto">🍕 Italian · Southern</span>
+      <h3>Hog &amp; Hominy</h3>
+      <p>Italian–Southern fusion. <strong style="color:var(--accent)">Michelin 2025.</strong> Lunch Tue–Fri, brunch weekends, dinner nightly. Reservations highly recommended.</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://hogandhominy.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1127,-89.8908)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.5</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="ecco">
+      <span class="card-badge badge-resto">🫒 Mediterranean</span>
+      <h3>Ecco on Overton Park</h3>
+      <p>Family-owned Mediterranean in the Evergreen Historic District. Don't miss the crab claws and lobster ravioli. <em>Closed Mon &amp; Sun.</em></p>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.eccoonovertonpark.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1486,-90.0071)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.5</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="coastal">
+      <span class="card-badge badge-resto">🐟 Seafood</span>
+      <h3>Coastal Fish Company</h3>
+      <p>Fine dining with a beautiful water view. Fresh seafood, elegant atmosphere. Weekend brunch from 10:30am. East Memphis.</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.coastalfishcompany.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1362,-89.8267)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.6</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="rendezvous">
+      <span class="card-badge badge-resto">🔥 BBQ</span>
+      <h3>The Rendezvous</h3>
+      <p>A Memphis legend since 1948. Famous dry rub ribs in a downtown alley. <em>Closed Mon &amp; Sun.</em> Reservations recommended.</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.hogsfly.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1434,-90.0516)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.4 · 7,000 reviews</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="central-bbq">
+      <span class="card-badge badge-resto">🍖 BBQ</span>
+      <h3>Central BBQ</h3>
+      <p>Classic Memphis-style BBQ, very affordable. Multiple locations. Award-winning fall-off-the-bone meat.</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://eatcbq.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1257,-89.9874)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.4 · 4,700 reviews</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAKEOUT -->
+  <h2 class="section-title">📦 Ordering Out</h2>
+  <div class="section-label">Delivery / Pickup</div>
+  <div class="grid grid-2">
+    <div class="card" data-place="westys">
+      <span class="card-badge badge-takeaway">🍺 Bar &amp; Grill</span>
+      <h3>Westy's</h3>
+      <p>Cozy neighborhood bar-restaurant in the Pinch District. Good food at reasonable prices. Open until 2am.</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://www.westysmemphis.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1542,-90.0490)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.1 · 2,600 reviews</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GROCERY -->
+  <h2 class="section-title">🛒 Grocery Shopping</h2>
+  <div class="section-label">Practical tips from Valerie</div>
+  <div class="grid grid-2">
+
+    <div class="card" data-place="cordelias">
+      <span class="card-badge badge-grocery">✅ Recommended</span>
+      <h3>Miss Cordelia's · Mud Island</h3>
+      <p>Quality neighborhood grocery on Mud Island — ideal if staying downtown. Deli, fresh produce, great beer selection. Open 7am–9pm (8am weekends).</p>
+      <div class="card-meta">
+        <a class="card-link" href="https://cordeliasmarket.com" target="_blank" rel="noopener">Website <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="map-link" href="#map" onclick="flyToPlace(35.1612,-90.0538)">📍 Map</a>
+        <span class="rating"><span>★</span> 4.6</span>
+      </div>
+    </div>
+
+    <div class="card" data-place="safe-zones">
+      <span class="card-badge badge-grocery">✅ Safe zones</span>
+      <h3>Kroger · Whole Foods · Fresh Market</h3>
+      <p>Stick to stores <strong style="color:var(--success)">east of Highland on Poplar</strong>, or those on <strong style="color:var(--success)">Union Avenue</strong> downtown. <span style="color:var(--danger)">⚠ Avoid the Kroger at Poplar &amp; Highland.</span></p>
+      <div class="valerie-note">Poplar Avenue is the main road — once you cross the Highland intersection, you don't have to be as careful. Same for getting gas — go a bit further out or on Union.</div>
+    </div>
+
+  </div>
+
+  <!-- CONTACT -->
+  <h2 class="section-title">📞 Local Contact</h2>
+  <div class="section-label">If you need help</div>
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="card-badge badge-activity">🏥 St. Jude</span>
+      <h3>Valerie Groben</h3>
+      <p>St. Jude Children's Research Hospital — available if you have questions or get stuck anywhere.</p>
+      <div class="card-meta">
+        <span style="font-family:'DM Mono',monospace; font-size:0.85rem; color:var(--accent);">📱 901-491-9163</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<footer>
+  Travel guide prepared for the Memphis stay · SJCRH Observership · April 2026
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ─── PLACES DATA ───
+const PLACES = [
+  { lat:35.1344, lng:-90.0576, title:"National Civil Rights Museum", cat:"activity", color:"#4caf7d", info:"450 Mulberry St · Closed Tuesdays · ★ 4.9", url:"https://www.civilrightsmuseum.org" },
+  { lat:35.1387, lng:-89.8323, title:"Shelby Farms Park",            cat:"activity", color:"#4caf7d", info:"6903 Great View Dr N · ★ 4.8",            url:"https://www.shelbyfarmspark.org" },
+  { lat:35.1108, lng:-89.9177, title:"Memphis Botanic Garden",        cat:"activity", color:"#4caf7d", info:"750 Cherry Rd · Open daily 9am–6pm · ★ 4.7", url:"https://membg.org" },
+  { lat:35.1502, lng:-89.9942, title:"Memphis Zoo",                   cat:"activity", color:"#4caf7d", info:"2000 Prentiss Pl · ★ 4.6",               url:"https://www.memphiszoo.org" },
+  { lat:35.1388, lng:-90.0557, title:"Catherine & Mary's",            cat:"restaurant", color:"#c9a84c", info:"272 S Main St · Dinner from 4pm · ★ 4.5", url:"https://catherineandmarys.com" },
+  { lat:35.1127, lng:-89.8908, title:"Hog & Hominy",                  cat:"restaurant", color:"#c9a84c", info:"707 W Brookhaven Cir · Michelin 2025 · ★ 4.5", url:"https://hogandhominy.com" },
+  { lat:35.1486, lng:-90.0071, title:"Ecco on Overton Park",          cat:"restaurant", color:"#c9a84c", info:"1585 Overton Park Ave · Closed Mon & Sun · ★ 4.5", url:"https://www.eccoonovertonpark.com" },
+  { lat:35.1362, lng:-89.8267, title:"Coastal Fish Company",          cat:"restaurant", color:"#c9a84c", info:"415 Great View Dr E · ★ 4.6",            url:"https://www.coastalfishcompany.com" },
+  { lat:35.1434, lng:-90.0516, title:"The Rendezvous",                cat:"restaurant", color:"#c9a84c", info:"52 S 2nd St · Closed Mon & Sun · ★ 4.4", url:"https://www.hogsfly.com" },
+  { lat:35.1257, lng:-89.9874, title:"Central BBQ",                   cat:"restaurant", color:"#c9a84c", info:"2235 Central Ave · ★ 4.4",              url:"https://eatcbq.com" },
+  { lat:35.1542, lng:-90.0490, title:"Westy's",                       cat:"takeout", color:"#7eb3e8", info:"346 N Main St · Open until 2am · ★ 4.1", url:"https://www.westysmemphis.com" },
+  { lat:35.1612, lng:-90.0538, title:"Miss Cordelia's",               cat:"grocery", color:"#c09ee0", info:"737 Harbor Bend Rd · 7am–9pm · ★ 4.6",  url:"https://cordeliasmarket.com" },
+  { lat:35.1277, lng:-89.9454, title:"⚠ AVOID: Poplar & Highland",   cat:"avoid", color:"#e05c4b", info:"Avoid this Kroger & gas stations here",  url:null },
+  { lat:35.1462, lng:-90.0496, title:"✓ Union Ave (safe for grocery)",cat:"grocery", color:"#4caf7d", info:"Kroger & Fresh Market on Union — safe",  url:null },
+  { lat:35.1275, lng:-89.8950, title:"✓ East Poplar (past Highland)", cat:"grocery", color:"#4caf7d", info:"Safe zone: Kroger, Whole Foods, Fresh Market", url:null },
+];
+
+// ─── DARK MAP TILES ───
+const map = L.map('map', {
+  center: [35.138, -89.965],
+  zoom: 12,
+  zoomControl: true,
+  attributionControl: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// ─── MARKERS ───
+const markers = [];
+
+PLACES.forEach(p => {
+  const icon = L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="
+      width: 20px; height: 20px; border-radius: 50%;
+      background: ${p.color}; border: 2.5px solid rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 12px ${p.color}44;
+    "></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -14]
+  });
+
+  const linkHtml = p.url
+    ? `<a href="${p.url}" target="_blank" rel="noopener" class="popup-link">Visit website ↗</a>`
+    : '';
+
+  const marker = L.marker([p.lat, p.lng], { icon })
+    .addTo(map)
+    .bindPopup(`
+      <div class="popup-title">${p.title}</div>
+      <div class="popup-info">${p.info}</div>
+      ${linkHtml}
+    `, { maxWidth: 220 });
+
+  marker._cat = p.cat;
+  markers.push(marker);
+});
+
+// ─── FILTER BUTTONS ───
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    markers.forEach(m => {
+      if (cat === 'all' || m._cat === cat) {
+        m.addTo(map);
+      } else {
+        map.removeLayer(m);
+      }
+    });
+  });
+});
+
+// ─── FLY TO FROM CARD ───
+function flyToPlace(lat, lng) {
+  map.flyTo([lat, lng], 15, { duration: 1 });
+  markers.forEach(m => {
+    const ll = m.getLatLng();
+    if (Math.abs(ll.lat - lat) < 0.001 && Math.abs(ll.lng - lng) < 0.001) {
+      setTimeout(() => m.openPopup(), 600);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
