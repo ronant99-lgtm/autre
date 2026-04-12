@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memphis — History &amp; Travel Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{--navy:#0f1923;--navy-light:#1a2a38;--navy-card:#162030;--accent:#c9a84c;--accent-glow:rgba(201,168,76,.15);--text:#e8e0d0;--text-muted:#8a9bb0;--danger:#e05c4b;--success:#4caf7d;--seafood:#7eb3e8;--grocery:#c09ee0;--border:rgba(201,168,76,.18);--header-bg:linear-gradient(160deg,#0a1520,var(--navy-light));--header-glow:rgba(201,168,76,.12);--popup-bg:var(--navy-card);--popup-text:var(--text);--advisory-bg:rgba(224,92,75,.08);--advisory-border:rgba(224,92,75,.25);--valerie-bg:rgba(201,168,76,.06)}
+[data-theme="light"]{--navy:#f5f0e8;--navy-light:#ece5d8;--navy-card:#fff;--accent:#8b6914;--accent-glow:rgba(139,105,20,.1);--text:#2c2416;--text-muted:#6b5d4d;--danger:#c0392b;--success:#2d7a4f;--seafood:#2966a3;--grocery:#7b4a9e;--border:rgba(139,105,20,.18);--header-bg:linear-gradient(160deg,#ece5d8,#f5f0e8);--header-glow:rgba(139,105,20,.08);--popup-bg:#fff;--popup-text:#2c2416;--advisory-bg:rgba(192,57,43,.06);--advisory-border:rgba(192,57,43,.2);--valerie-bg:rgba(139,105,20,.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;transition:background .4s,color .4s}
+.theme-toggle{position:absolute;top:1.2rem;right:1.5rem;z-index:10;background:rgba(201,168,76,.1);border:1px solid var(--border);color:var(--accent);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.theme-toggle:hover{background:rgba(201,168,76,.2);transform:scale(1.08)}
+header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:3rem 2rem 2.5rem;text-align:center;position:relative;overflow:hidden;transition:background .4s}
+header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,var(--header-glow),transparent 65%);pointer-events:none}
+.header-kicker{font-size:.72rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem}
+header h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:400;color:var(--text);line-height:1.15}
+header h1 em{color:var(--accent);font-style:italic}
+.header-sub{color:var(--text-muted);font-size:.9rem;margin-top:.5rem;font-weight:300}
+.header-credit{color:var(--text-muted);font-size:.76rem;margin-top:.8rem;font-weight:300;font-style:italic;opacity:.7}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+main{padding:2.5rem 0 4rem}
+.section-label{font-size:.68rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.layer-toggle{display:flex;gap:0;margin-bottom:1rem;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content}
+.layer-btn{background:transparent;border:none;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;padding:.5rem 1.1rem;cursor:pointer;transition:all .25s;border-right:1px solid var(--border)}
+.layer-btn:last-child{border-right:none}
+.layer-btn:hover{color:var(--text)}
+.layer-btn.active{background:var(--accent-glow);color:var(--accent)}
+.filter-bar{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.filter-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:500;padding:.3rem .65rem;border-radius:20px;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:.25rem;white-space:nowrap}
+.filter-btn:hover{border-color:var(--accent);color:var(--text)}
+.filter-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+.filter-dot{width:7px;height:7px;border-radius:50%}
+.map-section{margin-bottom:2.5rem}
+.map-wrapper{border-radius:12px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.4);height:500px;position:relative;background:var(--navy-light)}
+#map{width:100%;height:100%}
+.leaflet-container{background:var(--navy-light)!important}
+.leaflet-popup-content-wrapper{background:var(--popup-bg)!important;color:var(--popup-text)!important;border:1px solid var(--border)!important;border-radius:10px!important;box-shadow:0 8px 30px rgba(0,0,0,.3)!important}
+.leaflet-popup-tip{background:var(--popup-bg)!important;border:1px solid var(--border)!important}
+.leaflet-popup-content{margin:12px 14px!important;font-family:'DM Sans',sans-serif!important;font-size:13px!important;max-width:290px}
+.popup-era{font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;opacity:.85}
+.popup-title{font-family:'DM Serif Display',serif;font-size:14px;font-weight:400;margin-bottom:4px}
+.popup-info{color:var(--text-muted);font-size:11.5px;line-height:1.5}
+.popup-history{color:var(--text-muted);font-size:11px;line-height:1.5;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-style:italic}
+.popup-link{display:inline-block;margin-top:6px;color:var(--accent);font-weight:500;font-size:11.5px;text-decoration:none}
+.popup-link:hover{text-decoration:underline}
+.map-legend{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-top:.8rem;font-size:.72rem;color:var(--text-muted)}
+.legend-item{display:flex;align-items:center;gap:.3rem}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.zone-advisory{background:var(--advisory-bg);border:1px solid var(--advisory-border);border-radius:10px;padding:1rem 1.2rem;margin-top:1rem;font-size:.87rem;color:var(--text);display:flex;gap:.75rem;align-items:flex-start}
+.zone-advisory .icon{font-size:1.1rem;flex-shrink:0}
+.zone-advisory strong{color:var(--danger)}
+.stats-bar{display:flex;flex-wrap:wrap;gap:1.5rem;margin:1.5rem 0;padding:1rem 1.3rem;background:var(--navy-card);border:1px solid var(--border);border-radius:10px;transition:background .4s}
+.stat{text-align:center}.stat-num{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--accent)}.stat-label{font-size:.72rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.grid{display:grid;gap:1rem}.grid-2{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}.grid-3{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:var(--navy-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.4rem;transition:background .4s,border-color .2s,transform .2s,box-shadow .2s;cursor:default}
+.card:hover{border-color:rgba(201,168,76,.4);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.15)}
+[data-theme="light"] .card{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+[data-theme="light"] .card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1)}
+.card-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.67rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;padding:.2rem .55rem;border-radius:20px;margin-bottom:.7rem}
+.badge-activity{background:rgba(76,175,125,.12);color:var(--success);border:1px solid rgba(76,175,125,.2)}
+.badge-resto{background:rgba(201,168,76,.12);color:var(--accent);border:1px solid rgba(201,168,76,.2)}
+.badge-takeaway{background:rgba(100,140,200,.12);color:#7eb3e8;border:1px solid rgba(100,140,200,.2)}
+.badge-grocery{background:rgba(180,120,200,.12);color:#c09ee0;border:1px solid rgba(180,120,200,.2)}
+.badge-era{padding:.2rem .55rem;border-radius:20px;margin-bottom:.7rem;font-size:.67rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.35rem}
+.card .history-blurb{color:var(--text-muted);font-size:.82rem;line-height:1.55;font-style:italic;margin-top:.4rem}
+[data-theme="light"] .badge-activity{background:rgba(45,122,79,.1);color:var(--success);border-color:rgba(45,122,79,.25)}
+[data-theme="light"] .badge-resto{background:rgba(139,105,20,.1);color:var(--accent);border-color:rgba(139,105,20,.25)}
+.card h3{font-family:'DM Serif Display',serif;font-size:1.1rem;font-weight:400;color:var(--text);margin-bottom:.4rem;line-height:1.3}
+.card p{color:var(--text-muted);font-size:.86rem;line-height:1.55;font-weight:300}
+.card .valerie-note{margin-top:.5rem;padding:.5rem .7rem;background:var(--valerie-bg);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;font-size:.82rem;color:var(--text-muted);font-style:italic}
+.card .valerie-note::before{content:'💬 '}
+.card-meta{display:flex;align-items:center;gap:.8rem;margin-top:.9rem;flex-wrap:wrap}
+.card-link{display:inline-flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:500;color:var(--accent);text-decoration:none;padding:.25rem .6rem;border:1px solid var(--border);border-radius:6px;transition:background .15s,border-color .15s}
+.card-link:hover{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.4)}
+.map-link{display:inline-flex;align-items:center;gap:.3rem;font-size:.74rem;color:var(--text-muted);text-decoration:none;padding:.2rem .5rem;border:1px solid rgba(138,155,176,.2);border-radius:6px;transition:all .15s}
+.map-link:hover{border-color:var(--text-muted);color:var(--text)}
+.rating{font-size:.78rem;color:var(--text-muted)}.rating span{color:var(--accent)}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.55rem;font-weight:400;color:var(--text);margin-bottom:1.2rem;margin-top:2.5rem}
+footer{text-align:center;padding:1.5rem;border-top:1px solid var(--border);font-size:.76rem;color:var(--text-muted);font-weight:300;line-height:1.7}
+.card{opacity:0;animation:fadeUp .5s ease forwards}
+.card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.1s}.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.2s}.card:nth-child(5){animation-delay:.25s}.card:nth-child(6){animation-delay:.3s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.map-wrapper{height:350px}header{padding:1.8rem 1rem 1.5rem}.grid-3{grid-template-columns:1fr}.filter-bar{gap:.3rem}}
+@media print{body{background:#fff;color:#1a1a1a}.map-section,.filter-bar,.layer-toggle,.stats-bar{display:none}.card{break-inside:avoid;border-color:#ccc;background:#fafafa}header{background:#fff;border-bottom:2px solid #c9a84c}header h1,.header-kicker{color:#1a1a1a}header h1 em{color:#8b6914}}
+</style>
+</head>
+<body>
+<header>
+  <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">◑</button>
+  <div class="header-kicker">History &amp; Travel Guide · SJCRH Observership 2026</div>
+  <h1>Memphis, <em>Tennessee</em></h1>
+  <p class="header-sub">200 Years of History · Activities · Restaurants · Practical Tips</p>
+  <p class="header-credit">History from <em>A History Lover's Guide to Memphis</em> by W. Patton · Tips by Valerie Groben, St. Jude</p>
+</header>
+<main><div class="container">
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">55+</div><div class="stat-label">Historic Sites</div></div>
+    <div class="stat"><div class="stat-num">10</div><div class="stat-label">Eras</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Restaurants</div></div>
+    <div class="stat"><div class="stat-num">200</div><div class="stat-label">Years</div></div>
+  </div>
+  <section class="map-section">
+    <div class="section-label">Interactive Map</div>
+    <div class="layer-toggle">
+      <button class="layer-btn active" data-layer="all">All Layers</button>
+      <button class="layer-btn" data-layer="history">📖 History</button>
+      <button class="layer-btn" data-layer="practical">🍽 Practical</button>
+    </div>
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="river"><span class="filter-dot" style="background:#5ba3d9"></span> River</button>
+      <button class="filter-btn" data-cat="native"><span class="filter-dot" style="background:#b07d4a"></span> Native</button>
+      <button class="filter-btn" data-cat="antebellum"><span class="filter-dot" style="background:#c9a84c"></span> Antebellum</button>
+      <button class="filter-btn" data-cat="civilwar"><span class="filter-dot" style="background:#d46a6a"></span> Civil War</button>
+      <button class="filter-btn" data-cat="gilded"><span class="filter-dot" style="background:#c09ee0"></span> Gilded Age</button>
+      <button class="filter-btn" data-cat="beale"><span class="filter-dot" style="background:#e8a735"></span> Beale St</button>
+      <button class="filter-btn" data-cat="crump"><span class="filter-dot" style="background:#7eb3e8"></span> Crump Era</button>
+      <button class="filter-btn" data-cat="rock"><span class="filter-dot" style="background:#e05c9f"></span> Rock'n'Roll</button>
+      <button class="filter-btn" data-cat="rights"><span class="filter-dot" style="background:#4caf7d"></span> Civil Rights</button>
+      <button class="filter-btn" data-cat="suburb"><span class="filter-dot" style="background:#8bb89e"></span> Suburbs</button>
+      <button class="filter-btn" data-cat="practical-activity"><span class="filter-dot" style="background:#4caf7d"></span> Activities</button>
+      <button class="filter-btn" data-cat="practical-restaurant"><span class="filter-dot" style="background:#c9a84c"></span> Restaurants</button>
+      <button class="filter-btn" data-cat="practical-grocery"><span class="filter-dot" style="background:#c09ee0"></span> Grocery</button>
+    </div>
+    <div class="map-wrapper"><div id="map"></div></div>
+    <div class="map-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#5ba3d9"></span> River</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#b07d4a"></span> Native</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c9a84c"></span> Antebellum</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#d46a6a"></span> Civil War</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c09ee0"></span> Gilded Age</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#e8a735"></span> Beale St</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#7eb3e8"></span> Crump Era</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#e05c9f"></span> Rock'n'Roll</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#4caf7d"></span> Civil Rights</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#8bb89e"></span> Suburbs</span>
+    </div>
+    <div class="zone-advisory"><span class="icon">⚠️</span><div><strong>Area to avoid</strong> — Do not shop or get gas at <strong>Poplar &amp; Highland</strong>. Head further east on Poplar or use stores on <strong>Union Avenue</strong> downtown.</div></div>
+  </section>
+  <h2 class="section-title">🗺 Activities &amp; Places to See</h2>
+  <div class="section-label">Must-sees</div>
+  <div class="grid grid-2">
+    <div class="card"><span class="card-badge badge-activity">🎖 Must-see</span><h3>National Civil Rights Museum</h3><p>Located in the Lorraine Motel, site of MLK's assassination. Plan 3–4 hours. <em>Closed Tuesdays.</em></p><div class="valerie-note">A must visit. Incredibly disturbing but the museum is done so well.</div><div class="card-meta"><a class="card-link" href="https://www.civilrightsmuseum.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1344,-90.0576)">📍 Map</a><span class="rating"><span>★</span> 4.9</span></div></div>
+    <div class="card"><span class="card-badge badge-activity">🌳 Outdoors</span><h3>Shelby Farms Park</h3><p>4,500 acres in East Memphis. Trails, lake, playground, restaurants.</p><div class="valerie-note">A great place to get outside on the weekend.</div><div class="card-meta"><a class="card-link" href="https://www.shelbyfarmspark.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1332,-89.8368)">📍 Map</a><span class="rating"><span>★</span> 4.8</span></div></div>
+    <div class="card"><span class="card-badge badge-activity">🌸 Nature</span><h3>Memphis Botanic Garden</h3><p>Beautiful gardens with giant TROLL sculpture exhibit. Open daily 9am–6pm.</p><div class="card-meta"><a class="card-link" href="https://membg.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1175,-89.9134)">📍 Map</a><span class="rating"><span>★</span> 4.7</span></div></div>
+    <div class="card"><span class="card-badge badge-activity">🦁 Zoo</span><h3>Memphis Zoo</h3><p>3,500+ animals. Open 9am–5pm (6pm Saturdays).</p><div class="valerie-note">It's a great zoo! Must see.</div><div class="card-meta"><a class="card-link" href="https://www.memphiszoo.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1502,-89.9942)">📍 Map</a><span class="rating"><span>★</span> 4.6</span></div></div>
+  </div>
+  <h2 class="section-title">🍽 Restaurants</h2>
+  <div class="section-label">Valerie's favorites</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="card-badge badge-resto">🍝 Italian</span><h3>Catherine &amp; Mary's</h3><p>Refined Italian, South Main. Dinner 4–10pm. Valet Mon–Sat.</p><div class="card-meta"><a class="card-link" href="https://catherineandmarys.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1388,-90.0557)">📍</a><span class="rating"><span>★</span> 4.5</span></div></div>
+    <div class="card"><span class="card-badge badge-resto">🍕 Italian · Southern</span><h3>Hog &amp; Hominy</h3><p>Italian–Southern fusion. <strong style="color:var(--accent)">Michelin 2025.</strong> Brunch weekends.</p><div class="card-meta"><a class="card-link" href="https://hogandhominy.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1132,-89.8954)">📍</a><span class="rating"><span>★</span> 4.5</span></div></div>
+    <div class="card"><span class="card-badge badge-resto">🫒 Mediterranean</span><h3>Ecco on Overton Park</h3><p>Family-owned, Evergreen District. <em>Closed Mon &amp; Sun.</em></p><div class="card-meta"><a class="card-link" href="https://www.eccoonovertonpark.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1486,-90.0071)">📍</a><span class="rating"><span>★</span> 4.5</span></div></div>
+    <div class="card"><span class="card-badge badge-resto">🐟 Seafood</span><h3>Coastal Fish Company</h3><p>Fine dining, water view. Brunch weekends 10:30am.</p><div class="card-meta"><a class="card-link" href="https://www.coastalfishcompany.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1362,-89.8267)">📍</a><span class="rating"><span>★</span> 4.6</span></div></div>
+    <div class="card"><span class="card-badge badge-resto">🔥 BBQ</span><h3>The Rendezvous</h3><p>Memphis legend since 1948. Dry rub ribs. <em>Closed Mon &amp; Sun.</em></p><div class="card-meta"><a class="card-link" href="https://www.hogsfly.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1434,-90.0516)">📍</a><span class="rating"><span>★</span> 4.4</span></div></div>
+    <div class="card"><span class="card-badge badge-resto">🍖 BBQ</span><h3>Central BBQ</h3><p>Award-winning Memphis-style BBQ. Multiple locations.</p><div class="card-meta"><a class="card-link" href="https://eatcbq.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1257,-89.9874)">📍</a><span class="rating"><span>★</span> 4.4</span></div></div>
+  </div>
+  <h2 class="section-title">📦 Ordering Out &amp; 🛒 Grocery</h2>
+  <div class="section-label">Practical tips</div>
+  <div class="grid grid-2">
+    <div class="card"><span class="card-badge badge-takeaway">🍺 Bar &amp; Grill</span><h3>Westy's</h3><p>Pinch District. Good food, reasonable prices. Until 2am.</p><div class="card-meta"><a class="card-link" href="https://www.westysmemphis.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1542,-90.0490)">📍</a></div></div>
+    <div class="card"><span class="card-badge badge-grocery">✅ Recommended</span><h3>Miss Cordelia's · Mud Island</h3><p>Quality grocery. Deli, fresh produce. 7am–9pm.</p><div class="card-meta"><a class="card-link" href="https://cordeliasmarket.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1612,-90.0538)">📍</a></div></div>
+    <div class="card"><span class="card-badge badge-grocery">✅ Safe zones</span><h3>Kroger · Whole Foods · Fresh Market</h3><p><strong style="color:var(--success)">East of Highland on Poplar</strong> or <strong style="color:var(--success)">Union Ave</strong>. <span style="color:var(--danger)">⚠ Avoid Poplar &amp; Highland.</span></p><div class="valerie-note">Once you cross Highland, you don't have to be as careful. Same for gas.</div></div>
+  </div>
+
+  <!-- ═══════ HISTORICAL SITES BY ERA ═══════ -->
+
+  <h2 class="section-title">🌊 The River</h2>
+  <div class="section-label">Where Memphis began</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(91,163,217,.12);color:#5ba3d9;border:1px solid rgba(91,163,217,.25)">🪨 Landmark</span><h3>Cobblestones</h3><p>Riverside Dr, Court Ave to Beale St</p><p class="history-blurb">The only surviving 19th-century cobblestone river landing in North America — over 900,000 stones from the steamboat era.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1395,-90.0545)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(91,163,217,.12);color:#5ba3d9;border:1px solid rgba(91,163,217,.25)">🏝 Park</span><h3>Mud Island River Park</h3><p>125 N Front St</p><p class="history-blurb">Peninsula formed in 1912 around the abandoned warship USS Amphitrite. Features a 5-block-long scale model of the lower Mississippi.</p><div class="card-meta"><a class="card-link" href="https://www.mudisland.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1580,-90.0560)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(91,163,217,.12);color:#5ba3d9;border:1px solid rgba(91,163,217,.25)">🌉 Bridge</span><h3>Frisco &amp; Harahan Bridges</h3><p>235 Virginia Ave W</p><p class="history-blurb">The Frisco (1892) was the first bridge across the lower Mississippi. The Harahan's north roadway became the Big River Crossing bike path in 2016.</p><div class="card-meta"><a class="card-link" href="https://bigrivercrossing.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1340,-90.0680)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(91,163,217,.12);color:#5ba3d9;border:1px solid rgba(91,163,217,.25)">🏞 Park</span><h3>Tom Lee Park</h3><p>Riverside Dr at Beale St</p><p class="history-blurb">Named for Tom Lee, who saved 32 passengers from the capsized steamer M.E. Norman in 1925 despite being unable to swim.</p><div class="card-meta"><a class="card-link" href="https://www.memphisriverparks.org/tom-lee-park" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1310,-90.0570)">📍</a></div></div>
+  </div>
+
+  <h2 class="section-title">🏺 Native Heritage</h2>
+  <div class="section-label">Before Memphis</div>
+  <div class="grid grid-2">
+    <div class="card"><span class="badge-era" style="background:rgba(176,125,74,.12);color:#b07d4a;border:1px solid rgba(176,125,74,.25)">🗿 Archaeological</span><h3>Chickasaw Heritage Park</h3><p>351 Metal Museum Dr</p><p class="history-blurb">Remains of a Mississippian Culture settlement on the bluffs. Also home to the National Ornamental Metal Museum.</p><div class="card-meta"><a class="card-link" href="https://www.metalmuseum.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1085,-90.0620)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(176,125,74,.12);color:#b07d4a;border:1px solid rgba(176,125,74,.25)">🏛 Museum</span><h3>Chucalissa Museum</h3><p>T.O. Fuller State Park</p><p class="history-blurb">Prehistoric village and mound complex (1000–1500 CE). Reconstructed houses and museum run by the University of Memphis.</p><div class="card-meta"><a class="card-link" href="https://www.memphis.edu/chucalissa/" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.0580,-90.0220)">📍</a></div></div>
+  </div>
+
+  <h2 class="section-title">🏛 Antebellum Memphis</h2>
+  <div class="section-label">1819–1860</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(201,168,76,.12);color:#c9a84c;border:1px solid rgba(201,168,76,.25)">🏘 District</span><h3>Cotton Row</h3><p>Front St, Gayoso to Jefferson</p><p class="history-blurb">Memphis became the world's largest inland cotton market. Over 400,000 bales passed through annually at peak.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1430,-90.0530)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(201,168,76,.12);color:#c9a84c;border:1px solid rgba(201,168,76,.25)">⛪ Church</span><h3>Calvary Episcopal Church</h3><p>102 N Second St</p><p class="history-blurb">Memphis's oldest public building in continuous use (1843). Survived yellow fever, Civil War, and urban renewal.</p><div class="card-meta"><a class="card-link" href="https://www.calvaryepiscopal.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1460,-90.0480)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(201,168,76,.12);color:#c9a84c;border:1px solid rgba(201,168,76,.25)">🏠 House</span><h3>Magevney House</h3><p>198 Adams Ave</p><p class="history-blurb">Oldest surviving downtown home (1833). Irish immigrant Eugene Magevney hosted the city's first Catholic Mass here.</p><div class="card-meta"><a class="card-link" href="https://moshmemphis.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1454,-90.0486)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(201,168,76,.12);color:#c9a84c;border:1px solid rgba(201,168,76,.25)">⚰️ Cemetery</span><h3>Elmwood Cemetery</h3><p>824 S Dudley St</p><p class="history-blurb">Garden cemetery (1852). Resting place of 75,000+ people including Civil War generals, yellow fever victims, and 14 mayors.</p><div class="card-meta"><a class="card-link" href="https://www.elmwoodcemetery.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1257,-90.0414)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(201,168,76,.12);color:#c9a84c;border:1px solid rgba(201,168,76,.25)">🏠 House</span><h3>Hunt-Phelan House</h3><p>533 Beale St</p><p class="history-blurb">Designed by Robert Mills (Washington Monument architect). Completed 1832, served as Grant's HQ during the Civil War.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1350,-90.0430)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">⚔️ Civil War</h2>
+  <div class="section-label">1861–1865</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(212,106,106,.12);color:#d46a6a;border:1px solid rgba(212,106,106,.25)">⚓ Battle</span><h3>Battle of Memphis</h3><p>Mississippi River bluffs</p><p class="history-blurb">June 6, 1862: the Union fleet destroyed the Confederate navy in just 90 minutes as thousands watched from the bluffs.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1440,-90.0580)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(212,106,106,.12);color:#d46a6a;border:1px solid rgba(212,106,106,.25)">🏰 Fort</span><h3>Fort Pickering</h3><p>351 Metal Museum Dr</p><p class="history-blurb">Major Union garrison during the war. Became a refuge for thousands of formerly enslaved people who fled to freedom.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1087,-90.0615)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(212,106,106,.12);color:#d46a6a;border:1px solid rgba(212,106,106,.25)">⚰️ Cemetery</span><h3>Memphis National Cemetery</h3><p>3568 Townes Ave</p><p class="history-blurb">Final resting place of 40,000+ veterans, including 8,800+ unknown Union dead from Shiloh and Corinth.</p><div class="card-meta"><a class="card-link" href="https://www.cem.va.gov/cems/nchp/memphis.asp" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1164,-90.0353)">📍</a></div></div>
+  </div>
+
+  <h2 class="section-title">✨ Gilded Age</h2>
+  <div class="section-label">1865–1908</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(192,158,224,.12);color:#c09ee0;border:1px solid rgba(192,158,224,.25)">⛲ Square</span><h3>Court Square</h3><p>N Main St &amp; Court Ave</p><p class="history-blurb">Memphis's oldest public space — Davy Crockett and Sam Houston once lounged here. The Hebe Fountain (1876) still stands.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1460,-90.0500)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(192,158,224,.12);color:#c09ee0;border:1px solid rgba(192,158,224,.25)">🏠 House</span><h3>Woodruff-Fontaine House</h3><p>680 Adams Ave</p><p class="history-blurb">French Victorian mansion (1870) in Victorian Village. Now a house museum of Gilded Age elegance.</p><div class="card-meta"><a class="card-link" href="https://www.woodruff-fontaine.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1473,-90.0448)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(192,158,224,.12);color:#c09ee0;border:1px solid rgba(192,158,224,.25)">🏠 House</span><h3>Mallory-Neely House</h3><p>652 Adams Ave</p><p class="history-blurb">25 rooms of original furnishings spanning four generations. A remarkably preserved Italianate mansion.</p><div class="card-meta"><a class="card-link" href="https://moshmemphis.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1472,-90.0438)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(192,158,224,.12);color:#c09ee0;border:1px solid rgba(192,158,224,.25)">🌳 Park</span><h3>Overton Park</h3><p>2080 Poplar Ave</p><p class="history-blurb">Designed by George Kessler (1906). Houses the Memphis Zoo, Brooks Museum, and Overton Park Shell.</p><div class="card-meta"><a class="card-link" href="https://www.overtonpark.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1486,-89.9935)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(192,158,224,.12);color:#c09ee0;border:1px solid rgba(192,158,224,.25)">🏗 Building</span><h3>Porter Building</h3><p>10 N Main St</p><p class="history-blurb">Memphis's first skyscraper (1895). People lined up just to ride the elevator — a novelty at the time.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1440,-90.0480)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(192,158,224,.12);color:#c09ee0;border:1px solid rgba(192,158,224,.25)">🏭 Industrial</span><h3>Tennessee Brewery</h3><p>495 Tennessee St</p><p class="history-blurb">Castle-like building (1877–1890), once the largest brewery in the South. Now loft apartments preserving the façade.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1330,-90.0530)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">🎺 Beale Street</h2>
+  <div class="section-label">The heart of Black Memphis</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(232,167,53,.12);color:#e8a735;border:1px solid rgba(232,167,53,.25)">🎵 District</span><h3>Beale Street</h3><p>Beale St Historic District</p><p class="history-blurb">First laid out in 1841, became the 'Negro Main Street of America' — eclipsing even Harlem as the hub of Black culture.</p><div class="card-meta"><a class="card-link" href="https://www.bealestreet.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1395,-90.0510)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(232,167,53,.12);color:#e8a735;border:1px solid rgba(232,167,53,.25)">⛪ Church</span><h3>Beale Street Baptist Church</h3><p>379 Beale St</p><p class="history-blurb">First brick church in the South built by former slaves (1885). Ida B. Wells published her anti-lynching newspaper from its basement.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1390,-90.0480)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(232,167,53,.12);color:#e8a735;border:1px solid rgba(232,167,53,.25)">🌳 Park</span><h3>Church Park</h3><p>Beale &amp; Fourth Sts</p><p class="history-blurb">Built 1899 by Robert R. Church Sr. The only park for African Americans at the time, with a 2,000-seat auditorium.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1387,-90.0460)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(232,167,53,.12);color:#e8a735;border:1px solid rgba(232,167,53,.25)">🎵 Music</span><h3>W.C. Handy House</h3><p>352 Beale St</p><p class="history-blurb">Home of the 'Father of the Blues' (1912–18), where he composed 'Memphis Blues' and 'St. Louis Blues.'</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1392,-90.0490)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(232,167,53,.12);color:#e8a735;border:1px solid rgba(232,167,53,.25)">🎭 Theater</span><h3>Old Daisy Theater</h3><p>329 Beale St</p><p class="history-blurb">One of the earliest and most elegant Black theaters (1917), part of Saloon Row's transformation into a theater district.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1398,-90.0500)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">🏛 Crump Era</h2>
+  <div class="section-label">1909–1954</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(126,179,232,.12);color:#7eb3e8;border:1px solid rgba(126,179,232,.25)">🎭 Theater</span><h3>Orpheum Theater</h3><p>203 S Main St</p><p class="history-blurb">Originally the Grand Opera House (1890), rebuilt 1928 in lavish movie-palace style. Said to be haunted by a girl named Mary.</p><div class="card-meta"><a class="card-link" href="https://www.orpheum-memphis.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.14010,-90.05495)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(126,179,232,.12);color:#7eb3e8;border:1px solid rgba(126,179,232,.25)">🏨 Hotel</span><h3>Peabody Hotel</h3><p>149 Union Ave</p><p class="history-blurb">Rebuilt 1925. Famous for the March of the Peabody Ducks tradition since 1933 and its magnificent travertine lobby.</p><div class="card-meta"><a class="card-link" href="https://peabodymemphis.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.14266,-90.05169)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(126,179,232,.12);color:#7eb3e8;border:1px solid rgba(126,179,232,.25)">🏛 Museum</span><h3>Pink Palace Museum</h3><p>3050 Central Ave</p><p class="history-blurb">Pink marble mansion of Piggly Wiggly founder Clarence Saunders, who invented the self-service grocery store (1916). Museum since 1930.</p><div class="card-meta"><a class="card-link" href="https://moshmemphis.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.12537,-89.95919)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(126,179,232,.12);color:#7eb3e8;border:1px solid rgba(126,179,232,.25)">🏗 Building</span><h3>Sears Crosstown / Concourse</h3><p>1350 Concourse Ave</p><p class="history-blurb">Art deco Sears building (1927), repurposed as Crosstown Concourse — a vertical village of arts, education, and housing.</p><div class="card-meta"><a class="card-link" href="https://crosstownconcourse.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1429,-89.9724)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(126,179,232,.12);color:#7eb3e8;border:1px solid rgba(126,179,232,.25)">🍽 Restaurant</span><h3>Arcade Restaurant</h3><p>540 S Main St</p><p class="history-blurb">Memphis's oldest restaurant, open since 1919. Elvis was a regular — always the last booth on the left.</p><div class="card-meta"><a class="card-link" href="https://arcaderestaurant.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.13275,-90.05898)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(126,179,232,.12);color:#7eb3e8;border:1px solid rgba(126,179,232,.25)">🏛 Government</span><h3>Shelby County Courthouse</h3><p>140 Adams Ave</p><p class="history-blurb">Neoclassical courthouse (1906–09). Before it, courts met in a log cabin at Court Square.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.14786,-90.04967)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">🎸 Rock'n'Roll</h2>
+  <div class="section-label">1954–1976</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(224,92,159,.12);color:#e05c9f;border:1px solid rgba(224,92,159,.25)">🎙 Studio</span><h3>Sun Studio</h3><p>706 Union Ave</p><p class="history-blurb">Sam Phillips's studio produced the first rock'n'roll single (1951) and launched Elvis, Johnny Cash, Jerry Lee Lewis. National Historic Landmark.</p><div class="card-meta"><a class="card-link" href="https://www.sunstudio.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1395,-90.0385)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(224,92,159,.12);color:#e05c9f;border:1px solid rgba(224,92,159,.25)">🏠 Landmark</span><h3>Graceland</h3><p>3764 Elvis Presley Blvd</p><p class="history-blurb">Purchased by Elvis in 1957 for $100,000 at age 22. Open since 1982 — one of America's most-visited homes.</p><div class="card-meta"><a class="card-link" href="https://www.graceland.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.0477,-90.0260)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(224,92,159,.12);color:#e05c9f;border:1px solid rgba(224,92,159,.25)">🎵 Museum</span><h3>Stax Museum</h3><p>926 McLemore Ave</p><p class="history-blurb">Where Otis Redding, Isaac Hayes, and the Staple Singers recorded. Founded in an old movie theater by siblings Jim Stewart and Estelle Axton.</p><div class="card-meta"><a class="card-link" href="https://staxmuseum.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1158,-90.0313)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(224,92,159,.12);color:#e05c9f;border:1px solid rgba(224,92,159,.25)">🎤 Venue</span><h3>Overton Park Shell</h3><p>1928 Poplar Ave</p><p class="history-blurb">WPA amphitheater (1936) where Elvis gave his first paid public concert on July 30, 1954.</p><div class="card-meta"><a class="card-link" href="https://www.overtonparkshell.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1492,-89.9960)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(224,92,159,.12);color:#e05c9f;border:1px solid rgba(224,92,159,.25)">👔 Shop</span><h3>Lansky Brothers</h3><p>126 Beale St</p><p class="history-blurb">'Clothier to the King' — Elvis bought his flashy stage outfits here starting as a broke teenager on layaway.</p><div class="card-meta"><a class="card-link" href="https://lanskybros.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1394,-90.0533)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(224,92,159,.12);color:#e05c9f;border:1px solid rgba(224,92,159,.25)">🏠 Landmark</span><h3>Lauderdale Courts</h3><p>BB King Blvd</p><p class="history-blurb">1938 WPA housing where the Presleys lived 1949–53. Young Elvis walked from here to Beale Street to absorb the music.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1370,-90.0520)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">✊ Civil Rights</h2>
+  <div class="section-label">The African American experience</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.25)">⛪ Temple</span><h3>Mason Temple / COGIC</h3><p>938 Mason St</p><p class="history-blurb">MLK delivered 'I've Been to the Mountaintop' here on April 3, 1968 — the night before his assassination.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1288,-90.0390)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.25)">📷 Museum</span><h3>Withers Collection Museum</h3><p>333 Beale St</p><p class="history-blurb">Studio of photographer Ernest C. Withers who documented the civil rights movement, including the Emmett Till trial.</p><div class="card-meta"><a class="card-link" href="https://www.witherscollection.com" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1340,-90.0490)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.25)">🎓 College</span><h3>LeMoyne-Owen College</h3><p>807 Walker Ave</p><p class="history-blurb">One of the oldest HBCUs in the South (roots to 1862). Central to Memphis's civil rights movement.</p><div class="card-meta"><a class="card-link" href="https://www.loc.edu" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.1260,-90.0360)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.25)">📻 Radio</span><h3>WDIA Radio Station</h3><p>2074 Union Ave</p><p class="history-blurb">America's first all-Black-programmed station (1948). Launched B.B. King and Rufus Thomas, reaching a million listeners.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1400,-90.0370)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.25)">⚰️ Cemetery</span><h3>Zion Christian Cemetery</h3><p>1426 S Parkway E</p><p class="history-blurb">Memphis's oldest African American cemetery (1873). Resting place of Ida B. Wells's parents and early community leaders.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.1235,-90.0280)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">🌿 Suburbs &amp; County</h2>
+  <div class="section-label">Collierville · Germantown · Bartlett · Arlington · North County</div>
+  <div class="grid grid-3">
+    <div class="card"><span class="badge-era" style="background:rgba(139,184,158,.12);color:#8bb89e;border:1px solid rgba(139,184,158,.25)">🏘 Town</span><h3>Collierville Town Square</h3><p>Town Square, Collierville</p><p class="history-blurb">Laid out 1866. The town endured three Civil War battles and was rebuilt around this charming central square.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.0440,-89.6650)">📍 Map</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(139,184,158,.12);color:#8bb89e;border:1px solid rgba(139,184,158,.25)">🏠 House</span><h3>Davies Manor</h3><p>9336 Davies Plantation Rd</p><p class="history-blurb">Oldest surviving house in West Tennessee (1820s). Preserved plantation house with original log construction on 32 acres.</p><div class="card-meta"><a class="card-link" href="https://daviesmanor.org" target="_blank">Website ↗</a><a class="map-link" href="#map" onclick="flyTo(35.2010,-89.8700)">📍</a></div></div>
+    <div class="card"><span class="badge-era" style="background:rgba(139,184,158,.12);color:#8bb89e;border:1px solid rgba(139,184,158,.25)">🏪 Store</span><h3>Shelby Forest General Store</h3><p>7729 Benjestown Rd, Millington</p><p class="history-blurb">Old-time country store virtually unchanged since the 1930s. A living remnant of rural Shelby County.</p><div class="card-meta"><a class="map-link" href="#map" onclick="flyTo(35.3600,-89.9200)">📍 Map</a></div></div>
+  </div>
+
+  <h2 class="section-title">📞 Contact</h2>
+  <div class="section-label">If you need help</div>
+  <div class="grid grid-2">
+    <div class="card"><span class="card-badge badge-activity">🏥 St. Jude</span><h3>Valerie Groben</h3><p>Questions or stuck anywhere — don't hesitate to call.</p><div class="card-meta"><span style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--accent)">📱 901-491-9163</span></div></div>
+  </div>
+</div></main>
+<footer>History: <em>A History Lover's Guide to Memphis &amp; Shelby County</em> © 2020 William Patton, The History Press<br>Practical guide: SJCRH Observership · April 2026</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const HISTORY=[
+{lat:35.14448,lng:-90.05617,t:"Cobblestones",addr:"Riverside Dr, Court Ave to Beale St",era:"river",c:"#5ba3d9",h:"The only surviving 19th-century cobblestone river landing in North America — over 900,000 stones and 100+ iron mooring fixtures from the steamboat era. Paving began 1859, finished 1881.",u:null},
+{lat:35.15098,lng:-90.05808,t:"Mud Island River Park",addr:"125 N Front St",era:"river",c:"#5ba3d9",h:"A peninsula formed in 1912 around the abandoned warship USS Amphitrite. Now features a 5-block-long scale model of the lower Mississippi, an amphitheater, and Harbor Town.",u:"https://www.mudisland.com"},
+{lat:35.12934,lng:-90.07489,t:"Frisco & Harahan Bridges",addr:"235 Virginia Ave W",era:"river",c:"#5ba3d9",h:"The Frisco Bridge (1892) was the first bridge across the lower Mississippi. The Harahan Bridge's north roadway became the Big River Crossing bike/pedestrian path in 2016.",u:"https://bigrivercrossing.com"},
+{lat:35.13585,lng:-90.06336,t:"Tom Lee Park",addr:"Riverside Dr at Beale St",era:"river",c:"#5ba3d9",h:"Named for Tom Lee, who saved 32 passengers from the capsized steamer M.E. Norman in 1925 despite being unable to swim. A monument with 32 lights honors each survivor.",u:"https://www.memphisriverparks.org/tom-lee-park"},
+{lat:35.12287,lng:-90.07367,t:"Chickasaw Heritage Park",addr:"351 Metal Museum Dr",era:"native",c:"#b07d4a",h:"Remains of a large prehistoric Mississippian Culture settlement on the bluffs. Also home to the National Ornamental Metal Museum.",u:"https://www.metalmuseum.org"},
+{lat:35.06232,lng:-90.12982,t:"Chucalissa Museum",addr:"T.O. Fuller State Park",era:"native",c:"#b07d4a",h:"Prehistoric village site and mound complex occupied 1000–1500 CE by the Mississippian Culture. Features reconstructed houses and museum run by the University of Memphis.",u:"https://www.memphis.edu/chucalissa/"},
+{lat:35.14380,lng:-90.05576,t:"Cotton Row",addr:"Front St, Gayoso to Jefferson",era:"antebellum",c:"#c9a84c",h:"Memphis became the world's largest inland cotton market by the 1850s. At its peak, over 400,000 bales passed through Cotton Row annually.",u:null},
+{lat:35.14755,lng:-90.05039,t:"Calvary Episcopal Church",addr:"102 N Second St",era:"antebellum",c:"#c9a84c",h:"Memphis's oldest public building in continuous use, begun 1843. Gothic Revival design using locally made brick. Survived yellow fever, Civil War, and urban renewal.",u:"https://www.calvaryepiscopal.org"},
+{lat:35.14749,lng:-90.04826,t:"Magevney House",addr:"198 Adams Ave",era:"antebellum",c:"#c9a84c",h:"Oldest surviving downtown home (1833), built by Irish immigrant Eugene Magevney who hosted the city's first Catholic Mass here.",u:"https://moshmemphis.com"},
+{lat:35.12414,lng:-90.02920,t:"Elmwood Cemetery",addr:"824 S Dudley St",era:"antebellum",c:"#c9a84c",h:"Garden cemetery (1852). Resting place of 75,000+ people including Civil War generals, yellow fever victims, blues musicians, and 14 mayors.",u:"https://www.elmwoodcemetery.org"},
+{lat:35.13878,lng:-90.04398,t:"Hunt-Phelan House",addr:"533 Beale St",era:"antebellum",c:"#c9a84c",h:"Designed by Robert Mills (architect of the Washington Monument). Completed 1832, served as Grant's HQ during the Civil War. Has hosted more US presidents than any private Memphis home.",u:null},
+{lat:35.1440,lng:-90.0580,t:"Battle of Memphis",addr:"Mississippi River bluffs",era:"civilwar",c:"#d46a6a",h:"June 6, 1862: thousands watched from the bluffs as the Union fleet destroyed the Confederate River Defense Fleet in just 90 minutes. Memphis fell without a land fight.",u:null},
+{lat:35.12362,lng:-90.07272,t:"Fort Pickering",addr:"351 Metal Museum Dr",era:"civilwar",c:"#d46a6a",h:"Reactivated during the Civil War as a major Union garrison. Became a refuge for thousands of formerly enslaved people who fled behind Union lines.",u:null},
+{lat:35.17349,lng:-89.93744,t:"Memphis National Cemetery",addr:"3568 Townes Ave",era:"civilwar",c:"#d46a6a",h:"Final resting place of 40,000+ veterans from the Civil War to present, including 8,800+ unknown Union dead from Shiloh, Corinth, and other battles.",u:"https://www.cem.va.gov/cems/nchp/memphis.asp"},
+{lat:35.1460,lng:-90.0500,t:"Court Square",addr:"N Main St & Court Ave",era:"gilded",c:"#c09ee0",h:"Memphis's oldest public space where Davy Crockett and Sam Houston once lounged. The Hebe Fountain (1876) is one of America's oldest cast-iron fountains.",u:null},
+{lat:35.1330,lng:-90.0530,t:"Tennessee Brewery",addr:"495 Tennessee St",era:"gilded",c:"#c09ee0",h:"Castle-like building (1877–1890), once the largest brewery in the South. Now converted to loft apartments preserving the historic façade.",u:null},
+{lat:35.14482,lng:-90.03791,t:"Woodruff-Fontaine House",addr:"680 Adams Ave",era:"gilded",c:"#c09ee0",h:"French Victorian mansion (1870) in Victorian Village. Now a house museum showcasing Gilded Age elegance with period furnishings.",u:"https://www.woodruff-fontaine.org"},
+{lat:35.14507,lng:-90.03855,t:"Mallory-Neely House",addr:"652 Adams Ave",era:"gilded",c:"#c09ee0",h:"Italianate mansion with 25 rooms of original furnishings spanning four generations — a remarkably preserved embodiment of Memphis's Gilded Age.",u:"https://moshmemphis.com"},
+{lat:35.1440,lng:-90.0480,t:"Porter Building",addr:"10 N Main St",era:"gilded",c:"#c09ee0",h:"Memphis's first skyscraper (1895). When it opened, people lined up just to ride the elevator — a novelty at the time.",u:null},
+{lat:35.1486,lng:-89.9935,t:"Overton Park",addr:"2080 Poplar Ave",era:"gilded",c:"#c09ee0",h:"Designed by George Kessler in 1906. Named for city co-founder John Overton. Houses the Memphis Zoo, Brooks Museum, and the Overton Park Shell.",u:"https://www.overtonpark.org"},
+{lat:35.1395,lng:-90.0510,t:"Beale Street",addr:"Beale St Historic District",era:"beale",c:"#e8a735",h:"First laid out in 1841, it became the 'Negro Main Street of America' by the early 1900s — eclipsing Harlem as the hub of Black business, music, and culture.",u:"https://www.bealestreet.com"},
+{lat:35.1390,lng:-90.0480,t:"Beale Street Baptist Church",addr:"379 Beale St",era:"beale",c:"#e8a735",h:"First brick church in the South built by and for former slaves (completed 1885). Ida B. Wells published her anti-lynching newspaper from its basement.",u:null},
+{lat:35.1387,lng:-90.0460,t:"Church Park",addr:"Beale & Fourth Sts",era:"beale",c:"#e8a735",h:"Built 1899 by Robert R. Church Sr., one of the South's wealthiest Black men. The only park for African Americans, with a 2,000-seat auditorium where W.C. Handy played.",u:null},
+{lat:35.1392,lng:-90.0490,t:"W.C. Handy House",addr:"352 Beale St",era:"beale",c:"#e8a735",h:"Home of the 'Father of the Blues' (1912–18), where he composed 'Memphis Blues' and 'St. Louis Blues.' Moved from South Memphis to Beale Street.",u:null},
+{lat:35.13939,lng:-90.05027,t:"Old Daisy Theater",addr:"329 Beale St",era:"beale",c:"#e8a735",h:"One of the earliest and most elegant Black theaters, opened 1917. Part of old Saloon Row's transformation into a theater district.",u:null},
+{lat:35.1445,lng:-90.0465,t:"Crump Building",addr:"110 Adams Ave",era:"crump",c:"#7eb3e8",h:"Political nerve center of E.H. Crump, the boss who controlled Memphis politics 1909–1954. This office building was the city's true seat of power for three decades.",u:null},
+{lat:35.14786,lng:-90.04967,t:"Shelby County Courthouse",addr:"140 Adams Ave",era:"crump",c:"#7eb3e8",h:"Neoclassical courthouse (1906–09), the first monumental government building. Before it, courts met in a log cabin at Court Square.",u:null},
+{lat:35.14010,lng:-90.05495,t:"Orpheum Theater",addr:"203 S Main St",era:"crump",c:"#7eb3e8",h:"Originally the Grand Opera House (1890), rebuilt 1928 in movie-palace style. Said to be haunted by a girl named Mary who died in the 1920s fire.",u:"https://www.orpheum-memphis.com"},
+{lat:35.14266,lng:-90.05169,t:"Peabody Hotel",addr:"149 Union Ave",era:"crump",c:"#7eb3e8",h:"Rebuilt at current location in 1925 after the original 1869 hotel burned. Famous for the March of the Peabody Ducks tradition since 1933.",u:"https://peabodymemphis.com"},
+{lat:35.12537,lng:-89.95919,t:"Pink Palace Museum",addr:"3050 Central Ave",era:"crump",c:"#7eb3e8",h:"Pink marble mansion of Piggly Wiggly founder Clarence Saunders, who invented the self-service grocery store (1916). Lost his fortune before moving in; became a museum in 1930.",u:"https://moshmemphis.com"},
+{lat:35.1429,lng:-89.9724,t:"Sears Crosstown / Concourse",addr:"1350 Concourse Ave",era:"crump",c:"#7eb3e8",h:"Art deco Sears building (1927), largest in Memphis when built. Brilliantly repurposed as Crosstown Concourse — a vertical urban village of arts, education, and housing.",u:"https://crosstownconcourse.com"},
+{lat:35.13216,lng:-90.05944,t:"Central Station",addr:"545 S Main St",era:"crump",c:"#7eb3e8",h:"Built 1914, seeing 56 trains daily by 1935. Now renovated into a boutique hotel preserving the grand waiting hall.",u:null},
+{lat:35.13275,lng:-90.05898,t:"Arcade Restaurant",addr:"540 S Main St",era:"crump",c:"#7eb3e8",h:"Memphis's oldest restaurant, open since 1919. Elvis was a regular — always the last booth on the left.",u:"https://arcaderestaurant.com"},
+{lat:35.1370,lng:-90.0520,t:"Lauderdale Courts",addr:"BB King Blvd",era:"rock",c:"#e05c9f",h:"1938 WPA housing project where the Presley family lived 1949–53. Young Elvis walked from here to Beale Street to absorb the music that shaped him.",u:null},
+{lat:35.14003,lng:-90.05368,t:"Lansky Brothers",addr:"126 Beale St",era:"rock",c:"#e05c9f",h:"Opened 1946 on Beale Street. Became 'Clothier to the King' — Elvis bought his flashy stage outfits here starting as a broke teenager on layaway.",u:"https://lanskybros.com"},
+{lat:35.1395,lng:-90.0385,t:"Sun Studio",addr:"706 Union Ave",era:"rock",c:"#e05c9f",h:"Sam Phillips opened this studio in 1950 to record the blues of Beale Street. Produced the first rock'n'roll single (1951) and launched Elvis, Johnny Cash, Jerry Lee Lewis. National Historic Landmark.",u:"https://www.sunstudio.com"},
+{lat:35.1395,lng:-90.0505,t:"Hotel Chisca",addr:"262 S Main St",era:"rock",c:"#e05c9f",h:"From here in 1952, DJ Dewey Phillips first played Elvis's 'That's All Right' on his radio show. The switchboard lit up immediately.",u:null},
+{lat:35.1492,lng:-89.9960,t:"Overton Park Shell",addr:"1928 Poplar Ave",era:"rock",c:"#e05c9f",h:"WPA amphitheater (1936) where Elvis gave his first paid public concert on July 30, 1954. One of few surviving WPA amphitheaters.",u:"https://www.overtonparkshell.org"},
+{lat:35.0477,lng:-90.0260,t:"Graceland",addr:"3764 Elvis Presley Blvd",era:"rock",c:"#e05c9f",h:"Purchased by Elvis in 1957 for $100,000 at age 22. Open to the public since 1982 — one of the most-visited homes in America.",u:"https://www.graceland.com"},
+{lat:35.11555,lng:-90.03129,t:"Stax Museum",addr:"926 McLemore Ave",era:"rock",c:"#e05c9f",h:"Stax Records was founded by siblings Jim Stewart and Estelle Axton in an old movie theater. Otis Redding, Isaac Hayes, the Staple Singers all recorded here.",u:"https://staxmuseum.org"},
+{lat:35.11829,lng:-89.98040,t:"Mid-South Coliseum",addr:"996 Early Maxwell Blvd",era:"rock",c:"#e05c9f",h:"Premier venue 1963–2006. Both Elvis and the Beatles performed here. The Beatles' 1966 show was among the last of their final US tour.",u:null},
+{lat:35.1470,lng:-89.9990,t:"Overton Square",addr:"Madison Ave & Cooper St",era:"rock",c:"#e05c9f",h:"Transformed in 1969 by a 23-year-old into Memphis's counterculture hub. Declined in the 1980s but revived as a vibrant district since 2012.",u:null},
+{lat:35.1235,lng:-90.0280,t:"Zion Christian Cemetery",addr:"1426 S Parkway E",era:"rights",c:"#4caf7d",h:"Memphis's oldest African American cemetery (1873). Resting place of Ida B. Wells's parents, yellow fever victims, and early community leaders.",u:null},
+{lat:35.1260,lng:-90.0360,t:"LeMoyne-Owen College",addr:"807 Walker Ave",era:"rights",c:"#4caf7d",h:"Merger of two historically Black colleges, with roots back to 1862. One of the oldest HBCUs in the South, central to Memphis's civil rights movement.",u:"https://www.loc.edu"},
+{lat:35.14309,lng:-90.05306,t:"WDIA Radio",addr:"2074 Union Ave",era:"rights",c:"#4caf7d",h:"America's first all-Black-programmed radio station (1948). Its signal reached a million listeners and launched B.B. King and Rufus Thomas.",u:null},
+{lat:35.1288,lng:-90.0390,t:"Mason Temple / COGIC",addr:"938 Mason St",era:"rights",c:"#4caf7d",h:"MLK delivered his prophetic 'I've Been to the Mountaintop' speech here on April 3, 1968, the night before his assassination.",u:null},
+{lat:35.1340,lng:-90.0490,t:"Withers Collection Museum",addr:"333 Beale St",era:"rights",c:"#4caf7d",h:"Studio of photojournalist Ernest C. Withers who documented the civil rights movement including the Emmett Till trial and the 1968 sanitation strike.",u:"https://www.witherscollection.com"},
+{lat:35.0440,lng:-89.6650,t:"Collierville Town Square",addr:"Town Square, Collierville",era:"suburb",c:"#8bb89e",h:"Laid out 1866, originally Confederate Park. The town endured three Civil War battles and was rebuilt around this square.",u:null},
+{lat:35.2010,lng:-89.8700,t:"Davies Manor",addr:"9336 Davies Plantation Rd",era:"suburb",c:"#8bb89e",h:"Oldest surviving house in West Tennessee (1820s). A preserved plantation house with original log construction on 32 acres.",u:"https://daviesmanor.org"},
+{lat:35.3600,lng:-89.9200,t:"Shelby Forest General Store",addr:"7729 Benjestown Rd, Millington",era:"suburb",c:"#8bb89e",h:"Old-time country store virtually unchanged since the 1930s. A living remnant of rural Shelby County.",u:null},
+];
+
+const PRACTICAL=[
+{lat:35.13447,lng:-90.0577,t:"National Civil Rights Museum",cat:"practical-activity",c:"#4caf7d",info:"450 Mulberry St · Closed Tuesdays · ★ 4.9",u:"https://www.civilrightsmuseum.org"},
+{lat:35.1332,lng:-89.8368,t:"Shelby Farms Park",cat:"practical-activity",c:"#4caf7d",info:"6903 Great View Dr N · ★ 4.8",u:"https://www.shelbyfarmspark.org"},
+{lat:35.11064,lng:-89.91785,t:"Memphis Botanic Garden",cat:"practical-activity",c:"#4caf7d",info:"750 Cherry Rd · 9am–6pm · ★ 4.7",u:"https://membg.org"},
+{lat:35.15011,lng:-89.99426,t:"Memphis Zoo",cat:"practical-activity",c:"#4caf7d",info:"2000 Prentiss Pl · ★ 4.6",u:"https://www.memphiszoo.org"},
+{lat:35.1388,lng:-90.0557,t:"Catherine & Mary's",cat:"practical-restaurant",c:"#c9a84c",info:"272 S Main St · Dinner from 4pm",u:"https://catherineandmarys.com"},
+{lat:35.1132,lng:-89.8954,t:"Hog & Hominy",cat:"practical-restaurant",c:"#c9a84c",info:"707 W Brookhaven Cir · Michelin 2025",u:"https://hogandhominy.com"},
+{lat:35.1486,lng:-90.0071,t:"Ecco on Overton Park",cat:"practical-restaurant",c:"#c9a84c",info:"1585 Overton Park Ave · Closed Mon & Sun",u:"https://www.eccoonovertonpark.com"},
+{lat:35.1362,lng:-89.8267,t:"Coastal Fish Company",cat:"practical-restaurant",c:"#c9a84c",info:"415 Great View Dr E · ★ 4.6",u:"https://www.coastalfishcompany.com"},
+{lat:35.1434,lng:-90.0516,t:"The Rendezvous",cat:"practical-restaurant",c:"#c9a84c",info:"52 S 2nd St · Since 1948",u:"https://www.hogsfly.com"},
+{lat:35.1257,lng:-89.9874,t:"Central BBQ",cat:"practical-restaurant",c:"#c9a84c",info:"2235 Central Ave · ★ 4.4",u:"https://eatcbq.com"},
+{lat:35.1542,lng:-90.0490,t:"Westy's",cat:"practical-takeout",c:"#7eb3e8",info:"346 N Main St · Until 2am",u:"https://www.westysmemphis.com"},
+{lat:35.1612,lng:-90.0538,t:"Miss Cordelia's",cat:"practical-grocery",c:"#c09ee0",info:"737 Harbor Bend Rd · 7am–9pm",u:"https://cordeliasmarket.com"},
+{lat:35.1277,lng:-89.9454,t:"⚠ AVOID: Poplar & Highland",cat:"practical-avoid",c:"#e05c4b",info:"Avoid Kroger & gas stations here",u:null},
+];
+
+const ERA_LABELS={river:'The River',native:'Native Heritage',antebellum:'Antebellum',civilwar:'Civil War',gilded:'Gilded Age',beale:'Beale Street',crump:'Crump Era',rock:"Rock'n'Roll",rights:'Civil Rights',suburb:'Suburbs'};
+
+const map=L.map('map',{center:[35.135,-90.000],zoom:12,zoomControl:true});
+const TILES={dark:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',light:'https://{s}.basemaps.cartocdn.com/voyager/{z}/{x}/{y}{r}.png'};
+const tileOpts={attribution:'© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/">CARTO</a>',subdomains:'abcd',maxZoom:19};
+let curTile=null;
+function setTiles(t){if(curTile)map.removeLayer(curTile);curTile=L.tileLayer(TILES[t],tileOpts).addTo(map)}
+const themeToggle=document.getElementById('themeToggle');
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);themeToggle.textContent=t==='dark'?'☀':'◑';setTiles(t);try{localStorage.setItem('memphis-guide-theme',t)}catch(e){}}
+applyTheme((()=>{try{return localStorage.getItem('memphis-guide-theme')}catch(e){return null}})()||'dark');
+setTimeout(()=>map.invalidateSize(),200);
+themeToggle.addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme')||'dark';applyTheme(c==='dark'?'light':'dark')});
+
+function mkIcon(color,sz){return L.divIcon({className:'',html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+color+';border:2px solid rgba(255,255,255,.85);box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 10px '+color+'33"></div>',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2-4]})}
+
+const allMarkers=[];
+HISTORY.forEach(p=>{
+  const lnk=p.u?'<a href="'+p.u+'" target="_blank" rel="noopener" class="popup-link">Visit website ↗</a>':'';
+  const m=L.marker([p.lat,p.lng],{icon:mkIcon(p.c,14)}).bindPopup('<div class="popup-era" style="color:'+p.c+'">'+(ERA_LABELS[p.era]||p.era)+'</div><div class="popup-title">'+p.t+'</div><div class="popup-info">'+p.addr+'</div><div class="popup-history">'+p.h+'</div>'+lnk,{maxWidth:290}).addTo(map);
+  m._layer='history';m._cat=p.era;allMarkers.push(m);
+});
+PRACTICAL.forEach(p=>{
+  const lnk=p.u?'<a href="'+p.u+'" target="_blank" rel="noopener" class="popup-link">Visit website ↗</a>':'';
+  const m=L.marker([p.lat,p.lng],{icon:mkIcon(p.c,18)}).bindPopup('<div class="popup-era" style="color:'+p.c+'">Practical Guide</div><div class="popup-title">'+p.t+'</div><div class="popup-info">'+p.info+'</div>'+lnk,{maxWidth:240}).addTo(map);
+  m._layer='practical';m._cat=p.cat;allMarkers.push(m);
+});
+
+let activeLayer='all',activeCat='all';
+function applyFilters(){allMarkers.forEach(m=>{const sl=activeLayer==='all'||m._layer===activeLayer;const sc=activeCat==='all'||m._cat===activeCat;if(sl&&sc)m.addTo(map);else map.removeLayer(m)})}
+document.querySelectorAll('.layer-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.layer-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeLayer=b.dataset.layer;activeCat='all';document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));document.querySelector('.filter-btn[data-cat="all"]').classList.add('active');applyFilters()})});
+document.querySelectorAll('.filter-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeCat=b.dataset.cat;activeLayer='all';document.querySelectorAll('.layer-btn').forEach(x=>x.classList.remove('active'));document.querySelector('.layer-btn[data-layer="all"]').classList.add('active');applyFilters()})});
+function flyTo(lat,lng){map.flyTo([lat,lng],16,{duration:1});allMarkers.forEach(m=>{const ll=m.getLatLng();if(Math.abs(ll.lat-lat)<.002&&Math.abs(ll.lng-lng)<.002)setTimeout(()=>m.openPopup(),600)})}
+</script>
+</body>
+</html>
