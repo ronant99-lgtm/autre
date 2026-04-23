@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>New York · Mai 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+/* ── Reset & Base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#f7f8fc;color:#1a1d2e;font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* ── Day palette ── */
+:root{
+  --j0:#FF6B6B; --j0-bg:rgba(255,107,107,.1);
+  --j1:#00B894; --j1-bg:rgba(0,184,148,.1);
+  --j2:#0984E3; --j2-bg:rgba(9,132,227,.1);
+  --j3:#6C5CE7; --j3-bg:rgba(108,92,231,.1);
+  --j4:#F9A825; --j4-bg:rgba(249,168,37,.1);
+  --j5:#E84393; --j5-bg:rgba(232,67,147,.1);
+  --j6:#00CEC9; --j6-bg:rgba(0,206,201,.1);
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-md:0 4px 20px rgba(0,0,0,.12);
+}
+
+/* ── Header ── */
+header{
+  background:linear-gradient(135deg,#1a1d2e 0%,#2d3561 100%);
+  color:#fff;padding:1.4rem 1.2rem 1.2rem;
+  position:sticky;top:0;z-index:1000;
+  box-shadow:0 2px 16px rgba(0,0,0,.25);
+}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.header-title{display:flex;flex-direction:column}
+.header-kicker{font-size:.65rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:.15rem}
+.header-h1{font-family:'DM Serif Display',serif;font-size:1.55rem;font-weight:400;color:#fff;line-height:1.1}
+.header-h1 em{color:#FDCB6E;font-style:italic}
+.header-meta{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.2rem}
+
+/* ── Day filter bar ── */
+.filter-wrap{background:#fff;padding:.7rem .9rem;border-bottom:1px solid #e8eaf0;overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:80px;z-index:999;scrollbar-width:none}
+.filter-wrap::-webkit-scrollbar{display:none}
+.filter-bar{display:flex;gap:.45rem;min-width:max-content}
+.day-btn{
+  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;
+  padding:.38rem .9rem;border-radius:20px;white-space:nowrap;transition:all .2s;
+  background:#f0f1f7;color:#6b7280;letter-spacing:.04em;
+}
+.day-btn.all{background:#1a1d2e;color:#fff}
+.day-btn.all.active{background:#1a1d2e;color:#fff;box-shadow:0 2px 8px rgba(26,29,46,.35)}
+.day-btn[data-day="j0"]{--dc:var(--j0);--db:var(--j0-bg)}
+.day-btn[data-day="j1"]{--dc:var(--j1);--db:var(--j1-bg)}
+.day-btn[data-day="j2"]{--dc:var(--j2);--db:var(--j2-bg)}
+.day-btn[data-day="j3"]{--dc:var(--j3);--db:var(--j3-bg)}
+.day-btn[data-day="j4"]{--dc:var(--j4);--db:var(--j4-bg)}
+.day-btn[data-day="j5"]{--dc:var(--j5);--db:var(--j5-bg)}
+.day-btn[data-day="j6"]{--dc:var(--j6);--db:var(--j6-bg)}
+.day-btn:not(.all){border:1.5px solid transparent}
+.day-btn:not(.all).active{background:var(--db);color:var(--dc);border-color:var(--dc);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.day-btn:not(.all):not(.active):hover{background:#e8eaf0;color:#1a1d2e}
+.day-dot{width:7px;height:7px;border-radius:50%;background:var(--dc,#6b7280);display:inline-block;margin-right:.3rem;vertical-align:middle}
+
+/* ── Map ── */
+.map-section{position:relative}
+#map{width:100%;height:58vh;min-height:320px;max-height:520px}
+
+/* Leaflet popup override */
+.leaflet-popup-content-wrapper{
+  border-radius:14px!important;box-shadow:0 8px 32px rgba(0,0,0,.18)!important;
+  border:none!important;padding:0!important;overflow:hidden;
+}
+.leaflet-popup-content{margin:0!important;width:240px!important}
+.leaflet-popup-tip-container{display:none}
+.leaflet-popup-close-button{top:8px!important;right:10px!important;color:#6b7280!important;font-size:16px!important;z-index:10}
+
+.popup-inner{padding:14px 14px 12px}
+.popup-day-badge{
+  display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;padding:.18rem .55rem;border-radius:10px;
+  margin-bottom:.55rem;
+}
+.popup-name{font-family:'DM Serif Display',serif;font-size:15px;font-weight:400;color:#1a1d2e;line-height:1.25;margin-bottom:.4rem}
+.popup-desc{font-size:.78rem;color:#6b7280;line-height:1.5;margin-bottom:.65rem}
+.popup-link{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-size:.72rem;font-weight:600;text-decoration:none;
+  padding:.3rem .7rem;border-radius:8px;transition:opacity .15s;
+}
+.popup-link:hover{opacity:.85}
+
+/* ── Cards section ── */
+.cards-section{padding:.5rem 0 4rem}
+.day-group{margin-bottom:.3rem}
+.day-group[style*="display:none"]{display:none!important}
+
+.day-header{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.85rem 1rem .6rem;
+  position:sticky;top:127px;z-index:100;
+  background:#f7f8fc;
+}
+.day-header-pill{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:.3rem .85rem;border-radius:20px;
+}
+.day-header-label{font-size:.8rem;color:#6b7280;font-weight:400}
+
+.cards-list{display:flex;flex-direction:column;gap:.55rem;padding:0 .9rem}
+
+.place-card{
+  background:#fff;border-radius:14px;box-shadow:var(--shadow);
+  display:flex;align-items:stretch;overflow:hidden;
+  transition:box-shadow .2s,transform .15s;
+  text-decoration:none;color:inherit;
+}
+.place-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.card-accent{width:5px;flex-shrink:0}
+.card-body{padding:.85rem 1rem;flex:1;min-width:0}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.3rem}
+.card-name{font-family:'DM Serif Display',serif;font-size:1rem;font-weight:400;line-height:1.25;color:#1a1d2e}
+.card-time{font-size:.68rem;font-weight:600;color:#9ca3af;background:#f3f4f6;padding:.15rem .45rem;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:.1rem}
+.card-desc{font-size:.8rem;color:#6b7280;line-height:1.5;margin-bottom:.6rem}
+.card-footer{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.card-web-link{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-size:.72rem;font-weight:600;text-decoration:none;
+  padding:.28rem .65rem;border-radius:8px;
+  transition:opacity .15s;
+}
+.card-web-link:hover{opacity:.82}
+.card-tag{font-size:.65rem;color:#9ca3af;background:#f3f4f6;padding:.15rem .45rem;border-radius:6px}
+
+/* ── Alert ── */
+.alert{
+  margin:.7rem .9rem;background:#fff3cd;border:1px solid #ffc107;
+  border-radius:10px;padding:.7rem .9rem;font-size:.78rem;color:#856404;
+  display:flex;align-items:flex-start;gap:.5rem;
+}
+.alert-icon{flex-shrink:0;font-size:1rem}
+
+/* ── Scrolltop ── */
+#scrollTop{
+  position:fixed;bottom:1.2rem;right:1rem;z-index:2000;
+  width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+  background:#1a1d2e;color:#fff;font-size:1.1rem;
+  box-shadow:0 3px 12px rgba(0,0,0,.25);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+}
+#scrollTop.show{opacity:1;pointer-events:auto}
+
+/* ── Responsive ── */
+@media(min-width:640px){
+  .cards-list{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+  .day-header{top:120px}
+}
+@media(min-width:900px){
+  #map{height:62vh;max-height:620px}
+  .cards-list{grid-template-columns:repeat(3,1fr)}
+}
+@media print{
+  .filter-wrap,.map-section,#scrollTop{display:none}
+  .place-card{box-shadow:none;border:1px solid #e5e7eb}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="header-kicker">🗽 Programme de visite</div>
+      <div class="header-h1">New York, <em>Mai 2026</em></div>
+      <div class="header-meta">Famille Tanguy-Serres · 2–8 mai · InterContinental Times Square</div>
+    </div>
+  </div>
+</header>
+
+<!-- Day filter bar -->
+<div class="filter-wrap">
+  <div class="filter-bar" id="filterBar">
+    <button class="day-btn all active" data-day="all">Tous les jours</button>
+    <button class="day-btn" data-day="j0"><span class="day-dot"></span>J0 · Sam 2</button>
+    <button class="day-btn" data-day="j1"><span class="day-dot"></span>J1 · Dim 3</button>
+    <button class="day-btn" data-day="j2"><span class="day-dot"></span>J2 · Lun 4</button>
+    <button class="day-btn" data-day="j3"><span class="day-dot"></span>J3 · Mar 5</button>
+    <button class="day-btn" data-day="j4"><span class="day-dot"></span>J4 · Mer 6</button>
+    <button class="day-btn" data-day="j5"><span class="day-dot"></span>J5 · Jeu 7</button>
+    <button class="day-btn" data-day="j6"><span class="day-dot"></span>J6 · Ven 8</button>
+  </div>
+</div>
+
+<!-- Map -->
+<div class="map-section">
+  <div id="map"></div>
+</div>
+
+<!-- Cards -->
+<div class="cards-section" id="cardsSection">
+
+  <!-- J0 -->
+  <div class="day-group" data-day="j0">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j0-bg);color:var(--j0)">🛬 J0 · Samedi 2 mai</span>
+      <span class="day-header-label">Arrivée &amp; Times Square</span>
+    </div>
+    <div class="alert"><span class="alert-icon">⚠️</span>Arrivée Newark ~9h46. Transfert hôtel ~45 min. Check-in officiel à 15h — dépôt bagages possible avant.</div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('intercontinental')">
+        <div class="card-accent" style="background:var(--j0)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">🏨 InterContinental Times Square</div><span class="card-time">Check-in 15h</span></div>
+          <div class="card-desc">Hôtel base · 300 W 44th St · Dépôt bagages possible dès l'arrivée.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.ihg.com/intercontinental/hotels/us/en/new-york/nycts/hoteldetail" target="_blank" style="background:var(--j0-bg);color:var(--j0)">🌐 Site web</a>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('timessquare')">
+        <div class="card-accent" style="background:var(--j0)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Times Square</div><span class="card-time">Après-midi</span></div>
+          <div class="card-desc">Déambulation libre autour de l'hôtel — lumières, billboards, ambiance New-Yorkaise.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.timessquarenyc.org" target="_blank" style="background:var(--j0-bg);color:var(--j0)">🌐 Site web</a>
+            <span class="card-tag">Gratuit</span>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('intrepid')">
+        <div class="card-accent" style="background:var(--j0)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Intrepid Museum</div><span class="card-time">Optionnel J0</span></div>
+          <div class="card-desc">Porte-avions musée, navette spatiale Enterprise — 10 min à pied. Selon énergie après le voyage.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://intrepidmuseum.org" target="_blank" style="background:var(--j0-bg);color:var(--j0)">🌐 Site web</a>
+            <span class="card-tag">~36$ adulte</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- J1 -->
+  <div class="day-group" data-day="j1">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j1-bg);color:var(--j1)">🦕 J1 · Dimanche 3 mai</span>
+      <span class="day-header-label">Upper West Side</span>
+    </div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('amnh')">
+        <div class="card-accent" style="background:var(--j1)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">American Museum of Natural History</div><span class="card-time">10h–14h</span></div>
+          <div class="card-desc">Dinosaures, planétarium, baleine bleue — prévoir 3–4h. Réserver en ligne.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.amnh.org" target="_blank" style="background:var(--j1-bg);color:var(--j1)">🌐 Site web</a>
+            <span class="card-tag">~28$ adulte</span>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('centralpark_w')">
+        <div class="card-accent" style="background:var(--j1)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Central Park</div><span class="card-time">Après-midi</span></div>
+          <div class="card-desc">Entrée W 79th St — Strawberry Fields, Belvedere Castle, Bow Bridge.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.centralparknyc.org" target="_blank" style="background:var(--j1-bg);color:var(--j1)">🌐 Site web</a>
+            <span class="card-tag">Gratuit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- J2 -->
+  <div class="day-group" data-day="j2">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j2-bg);color:var(--j2)">🌉 J2 · Lundi 4 mai</span>
+      <span class="day-header-label">Downtown &amp; Brooklyn</span>
+    </div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('chinatown')">
+        <div class="card-accent" style="background:var(--j2)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Chinatown</div><span class="card-time">Matin</span></div>
+          <div class="card-desc">Canal St / Mott St — exploration libre, dim sum et boulangeries chinoises.</div>
+          <div class="card-footer"><span class="card-tag">Gratuit</span></div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('littleitaly')">
+        <div class="card-accent" style="background:var(--j2)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Little Italy</div><span class="card-time">Matin</span></div>
+          <div class="card-desc">Mulberry St — cannoli, caffè et ambiance italienne à deux pas de Chinatown.</div>
+          <div class="card-footer"><span class="card-tag">Gratuit</span></div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('brooklynbridge')">
+        <div class="card-accent" style="background:var(--j2)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Brooklyn Bridge</div><span class="card-time">13h</span></div>
+          <div class="card-desc">Traversée à pied ~30 min, descendre côté DUMBO pour les photos emblématiques.</div>
+          <div class="card-footer"><span class="card-tag">Gratuit</span></div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('dumbo')">
+        <div class="card-accent" style="background:var(--j2)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">DUMBO</div><span class="card-time">Après-midi</span></div>
+          <div class="card-desc">Washington St / vue Manhattan Bridge — photos, antiquités, glaces. Métro retour F ou A.</div>
+          <div class="card-footer"><span class="card-tag">Gratuit</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- J3 -->
+  <div class="day-group" data-day="j3">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j3-bg);color:var(--j3)">⛴️ J3 · Mardi 5 mai</span>
+      <span class="day-header-label">Lower Manhattan + Broadway</span>
+    </div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('ferry')">
+        <div class="card-accent" style="background:var(--j3)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Staten Island Ferry</div><span class="card-time">9h</span></div>
+          <div class="card-desc">Traversée gratuite avec vue sur la Statue de la Liberté — départ Whitehall Terminal toutes les 30 min.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.siferry.com" target="_blank" style="background:var(--j3-bg);color:var(--j3)">🌐 Site web</a>
+            <span class="card-tag">Gratuit !</span>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('911')">
+        <div class="card-accent" style="background:var(--j3)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">9/11 Memorial</div><span class="card-time">10h30</span></div>
+          <div class="card-desc">Tour extérieur des bassins commémoratifs — entrée gratuite en extérieur, atmosphère solennelle.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.911memorial.org" target="_blank" style="background:var(--j3-bg);color:var(--j3)">🌐 Site web</a>
+            <span class="card-tag">Extérieur gratuit</span>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('broadway')">
+        <div class="card-accent" style="background:var(--j3)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">🎭 Broadway (soirée)</div><span class="card-time">19h</span></div>
+          <div class="card-desc">Spectacle en soirée — Lion King, Aladdin, MJ The Musical. Réserver très à l'avance !</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.broadway.com" target="_blank" style="background:var(--j3-bg);color:var(--j3)">🌐 Réserver</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- J4 -->
+  <div class="day-group" data-day="j4">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j4-bg);color:var(--j4)">🌇 J4 · Mercredi 6 mai</span>
+      <span class="day-header-label">Chelsea &amp; Hudson Yards</span>
+    </div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('highline')">
+        <div class="card-accent" style="background:var(--j4)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">The High Line</div><span class="card-time">10h</span></div>
+          <div class="card-desc">Promenade suspendue sur ancienne voie ferrée — ~2,5 km, art urbain, vues Hudson. Accès libre.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.thehighline.org" target="_blank" style="background:var(--j4-bg);color:var(--j4)">🌐 Site web</a>
+            <span class="card-tag">Gratuit</span>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('edge')">
+        <div class="card-accent" style="background:var(--j4)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">The Edge — Hudson Yards</div><span class="card-time">Fin d'après-midi</span></div>
+          <div class="card-desc">Plateforme en porte-à-faux au 100e étage — vue à 360° sur Manhattan, coucher de soleil. Réserver en ligne.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.edgenyc.com" target="_blank" style="background:var(--j4-bg);color:var(--j4)">🌐 Site web</a>
+            <span class="card-tag">~38$ adulte</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- J5 -->
+  <div class="day-group" data-day="j5">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j5-bg);color:var(--j5)">🎨 J5 · Jeudi 7 mai</span>
+      <span class="day-header-label">Upper East Side</span>
+    </div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('met')">
+        <div class="card-accent" style="background:var(--j5)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">The Metropolitan Museum of Art</div><span class="card-time">10h–14h</span></div>
+          <div class="card-desc">Temple de Dendour, armures, arts d'Asie — prévoir 3h min. Gratuit moins de 12 ans. Fermé le mercredi.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.metmuseum.org" target="_blank" style="background:var(--j5-bg);color:var(--j5)">🌐 Site web</a>
+            <span class="card-tag">~30$ adulte</span>
+          </div>
+        </div>
+      </div>
+      <div class="place-card" onclick="flyAndOpen('centralpark_e')">
+        <div class="card-accent" style="background:var(--j5)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Central Park (côté est)</div><span class="card-time">Après-midi</span></div>
+          <div class="card-desc">Conservatory Garden, Reservoir, Billy Johnson Playground (E 67th St) pour Julien.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.centralparknyc.org" target="_blank" style="background:var(--j5-bg);color:var(--j5)">🌐 Site web</a>
+            <span class="card-tag">Gratuit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- J6 -->
+  <div class="day-group" data-day="j6">
+    <div class="day-header">
+      <span class="day-header-pill" style="background:var(--j6-bg);color:var(--j6)">✈️ J6 · Vendredi 8 mai</span>
+      <span class="day-header-label">Roosevelt Island + Départ JFK</span>
+    </div>
+    <div class="alert"><span class="alert-icon">⚠️</span><strong>Départ hôtel AVANT 14h00</strong> — Vol JFK 17h30. Lyft/Uber ~55 min depuis Midtown. Prévoir 2h d'avance pour vol international.</div>
+    <div class="cards-list">
+      <div class="place-card" onclick="flyAndOpen('tramway')">
+        <div class="card-accent" style="background:var(--j6)"></div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-name">Roosevelt Island Tramway</div><span class="card-time">9h30</span></div>
+          <div class="card-desc">Traversée aérienne de l'East River — même tarif que le métro (~2,90$), vues uniques sur Midtown.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://rioc.ny.gov/302/Tram" target="_blank" style="background:var(--j6-bg);color:var(--j6)">🌐 Site web</a>
+            <span class="card-tag">~2,90$</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /cards-section -->
+
+<button id="scrollTop" title="Remonter" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ── Day colors ──
+var COLORS = {
+  j0:'#FF6B6B', j1:'#00B894', j2:'#0984E3',
+  j3:'#6C5CE7', j4:'#F9A825', j5:'#E84393', j6:'#00CEC9'
+};
+var DAY_LABELS = {
+  j0:'J0 · Sam 2', j1:'J1 · Dim 3', j2:'J2 · Lun 4',
+  j3:'J3 · Mar 5', j4:'J4 · Mer 6', j5:'J5 · Jeu 7', j6:'J6 · Ven 8'
+};
+
+// ── Places data ──
+var PLACES = [
+  // J0
+  {id:'intercontinental', day:'j0', lat:40.75866, lng:-73.98938, name:'🏨 InterContinental Times Square', desc:"Hôtel base pour tout le séjour.", url:'https://www.ihg.com/intercontinental/hotels/us/en/new-york/nycts/hoteldetail'},
+  {id:'timessquare', day:'j0', lat:40.7580, lng:-73.9855, name:'Times Square', desc:'Carrefour du monde — lumières et billboards géants.', url:'https://www.timessquarenyc.org'},
+  {id:'intrepid', day:'j0', lat:40.7649, lng:-74.0008, name:'Intrepid Museum', desc:'Porte-avions musée et navette spatiale Enterprise.', url:'https://intrepidmuseum.org'},
+
+  // J1
+  {id:'amnh', day:'j1', lat:40.7813, lng:-73.9740, name:'American Museum of Natural History', desc:'Dinosaures, planétarium Rose Center, baleine bleue.', url:'https://www.amnh.org'},
+  {id:'centralpark_w', day:'j1', lat:40.7829, lng:-73.9654, name:'Central Park (côté ouest)', desc:'Strawberry Fields, Belvedere Castle, Great Lawn.', url:'https://www.centralparknyc.org'},
+
+  // J2
+  {id:'chinatown', day:'j2', lat:40.7158, lng:-73.9970, name:'Chinatown', desc:'Canal St / Mott St — dim sum et boulangeries.'},
+  {id:'littleitaly', day:'j2', lat:40.7191, lng:-73.9973, name:'Little Italy', desc:'Mulberry St — cannoli et ambiance italienne.'},
+  {id:'brooklynbridge', day:'j2', lat:40.7061, lng:-73.9969, name:'Brooklyn Bridge', desc:'Traversée piétonne avec vue panoramique.'},
+  {id:'dumbo', day:'j2', lat:40.7033, lng:-73.9881, name:'DUMBO', desc:'Washington St — photo emblématique sous le pont.'},
+
+  // J3
+  {id:'ferry', day:'j3', lat:40.7011, lng:-74.0131, name:'Staten Island Ferry — Whitehall', desc:'Vue sur la Statue de la Liberté, gratuit.', url:'https://www.siferry.com'},
+  {id:'911', day:'j3', lat:40.7116, lng:-74.0133, name:'9/11 Memorial (extérieur)', desc:'Tour des bassins commémoratifs en plein air.', url:'https://www.911memorial.org'},
+  {id:'broadway', day:'j3', lat:40.7590, lng:-73.9845, name:'🎭 Broadway (soirée)', desc:'Théâtre musical le soir — réserver à l\'avance.', url:'https://www.broadway.com'},
+
+  // J4
+  {id:'highline', day:'j4', lat:40.7480, lng:-74.0048, name:'The High Line', desc:'Promenade verte suspendue, art urbain, Chelsea.', url:'https://www.thehighline.org'},
+  {id:'edge', day:'j4', lat:40.7536, lng:-74.0019, name:'The Edge — Hudson Yards', desc:'Plateforme en porte-à-faux au 100e étage.', url:'https://www.edgenyc.com'},
+
+  // J5
+  {id:'met', day:'j5', lat:40.7794, lng:-73.9632, name:'The Metropolitan Museum of Art', desc:'Temple de Dendour, armures, arts d\'Asie — 3h min.', url:'https://www.metmuseum.org'},
+  {id:'centralpark_e', day:'j5', lat:40.7769, lng:-73.9585, name:'Central Park (côté est)', desc:'Conservatory Garden, Reservoir, playground E 67th.', url:'https://www.centralparknyc.org'},
+
+  // J6
+  {id:'tramway', day:'j6', lat:40.7613, lng:-73.9642, name:'Roosevelt Island Tramway', desc:'Traversée aérienne East River — vues sur Midtown.', url:'https://rioc.ny.gov/302/Tram'}
+];
+
+// ── Init Map ──
+var map = L.map('map', {
+  center:[40.745, -73.987],
+  zoom:12,
+  zoomControl:true,
+  preferCanvas:false
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+// ── Icon factory ──
+function mkIcon(color, sz, num) {
+  sz = sz || 28;
+  var inner = num
+    ? '<span style="color:#fff;font-size:'+(sz*.48)+'px;font-weight:700;line-height:1">'+num+'</span>'
+    : '';
+  return L.divIcon({
+    className:'',
+    html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+color+';border:2.5px solid rgba(255,255,255,.95);box-shadow:0 3px 10px rgba(0,0,0,.3),0 0 0 4px '+color+'30;display:flex;align-items:center;justify-content:center">'+inner+'</div>',
+    iconSize:[sz,sz],
+    iconAnchor:[sz/2,sz/2],
+    popupAnchor:[0,-sz/2-4]
+  });
+}
+
+// ── Build markers ──
+var markers = {};
+var allMarkers = [];
+var dayCounters = {};
+
+PLACES.forEach(function(p) {
+  var c = COLORS[p.day];
+  dayCounters[p.day] = (dayCounters[p.day]||0) + 1;
+  var num = dayCounters[p.day];
+  var sz = 28;
+
+  var urlHtml = p.url
+    ? '<a href="'+p.url+'" target="_blank" class="popup-link" style="background:'+c+'18;color:'+c+'">🌐 Site web</a>'
+    : '';
+
+  var popupHtml =
+    '<div class="popup-inner">' +
+      '<div class="popup-day-badge" style="background:'+c+'18;color:'+c+'">'+DAY_LABELS[p.day]+'</div>' +
+      '<div class="popup-name">'+p.name+'</div>' +
+      '<div class="popup-desc">'+p.desc+'</div>' +
+      urlHtml +
+    '</div>';
+
+  var m = L.marker([p.lat, p.lng], {icon: mkIcon(c, sz, num)})
+    .bindPopup(popupHtml, {maxWidth:260, minWidth:230, closeButton:true})
+    .addTo(map);
+
+  markers[p.id] = m;
+  m._dayKey = p.day;
+  allMarkers.push(m);
+});
+
+// ── Fly to marker function (called from cards) ──
+function flyAndOpen(id) {
+  var m = markers[id];
+  if (!m) return;
+  var ll = m.getLatLng();
+  map.flyTo(ll, 15, {duration:0.8});
+  setTimeout(function(){m.openPopup();}, 900);
+  document.getElementById('map').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── Day filter logic ──
+var activeDay = 'all';
+
+function applyFilter(day) {
+  activeDay = day;
+  // Markers
+  allMarkers.forEach(function(m) {
+    if (day === 'all' || m._dayKey === day) {
+      if (!map.hasLayer(m)) map.addLayer(m);
+    } else {
+      if (map.hasLayer(m)) map.removeLayer(m);
+    }
+  });
+  // Cards
+  document.querySelectorAll('.day-group').forEach(function(g) {
+    var gDay = g.getAttribute('data-day');
+    g.style.display = (day === 'all' || gDay === day) ? '' : 'none';
+  });
+  // Fit bounds
+  if (day !== 'all') {
+    var pts = PLACES.filter(function(p){return p.day===day;}).map(function(p){return [p.lat,p.lng];});
+    if (pts.length) {
+      map.flyToBounds(pts, {padding:[50,50], duration:0.7, maxZoom:15});
+    }
+  } else {
+    map.flyTo([40.745,-73.987], 12, {duration:0.5});
+  }
+}
+
+document.querySelectorAll('.day-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.day-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    applyFilter(btn.getAttribute('data-day'));
+  });
+});
+
+// ── Scroll to top button ──
+var scrollBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', function(){
+  scrollBtn.classList.toggle('show', window.scrollY > 300);
+}, {passive:true});
+
+// ── Theme: force light for map readability ──
+document.body.style.background = '#f7f8fc';
+</script>
+</body>
+</html>
