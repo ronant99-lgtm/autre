@@ -15,7 +15,6 @@
     --text: #e8e0d0;
     --text-muted: #8a9bb0;
     --border: rgba(201,168,76,0.18);
-    /* Light mode */
     --parchment: #f5f0e8;
     --parchment-card: #ece5d8;
     --parchment-text: #2a2520;
@@ -34,7 +33,6 @@
     min-height: 100vh;
     transition: background 0.4s, color 0.4s;
   }
-
   body.light {
     background: var(--parchment);
     color: var(--parchment-text);
@@ -112,14 +110,8 @@
     transition: border-color 0.2s, color 0.2s, background 0.2s;
     z-index: 10;
   }
-  .theme-toggle:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  body.light .theme-toggle {
-    border-color: var(--parchment-border);
-    color: var(--parchment-muted);
-  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  body.light .theme-toggle { border-color: var(--parchment-border); color: var(--parchment-muted); }
   body.light .theme-toggle:hover { color: var(--accent); }
 
   /* ─── LAYOUT ─── */
@@ -168,27 +160,16 @@
   .card:nth-child(2) { animation-delay: 0.1s; }
   .card:nth-child(3) { animation-delay: 0.15s; }
   .card:nth-child(4) { animation-delay: 0.2s; }
-  .card:nth-child(5) { animation-delay: 0.25s; }
-  .card:nth-child(6) { animation-delay: 0.3s; }
 
   .card:hover {
     border-color: rgba(201,168,76,0.4);
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0,0,0,0.3);
   }
-  body.light .card {
-    background: var(--parchment-card);
-    border-color: var(--parchment-border);
-  }
-  body.light .card:hover {
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-  }
+  body.light .card { background: var(--parchment-card); border-color: var(--parchment-border); }
+  body.light .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
 
-  .card-icon {
-    font-size: 1.6rem;
-    margin-bottom: 0.7rem;
-    display: block;
-  }
+  .card-icon { font-size: 1.6rem; margin-bottom: 0.7rem; display: block; }
 
   .card-badge {
     display: inline-flex;
@@ -225,6 +206,14 @@
   }
   body.light .card p { color: var(--parchment-muted); }
 
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
   .card-link {
     display: inline-flex;
     align-items: center;
@@ -236,15 +225,19 @@
     padding: 0.3rem 0.7rem;
     border: 1px solid var(--border);
     border-radius: 6px;
-    margin-top: 1rem;
     transition: background 0.15s, border-color 0.15s;
   }
-  .card-link:hover {
-    background: rgba(201,168,76,0.08);
-    border-color: rgba(201,168,76,0.4);
-  }
+  .card-link:hover { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.4); }
   .card-link svg { width: 11px; height: 11px; }
   body.light .card-link { border-color: var(--parchment-border); }
+
+  .card-tag {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    opacity: 0.7;
+  }
+  body.light .card-tag { color: var(--parchment-muted); }
 
   /* ─── FOOTER ─── */
   footer {
@@ -256,10 +249,7 @@
     font-weight: 300;
     transition: border-color 0.4s, color 0.4s;
   }
-  body.light footer {
-    border-top-color: var(--parchment-border);
-    color: var(--parchment-muted);
-  }
+  body.light footer { border-top-color: var(--parchment-border); color: var(--parchment-muted); }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
@@ -287,13 +277,12 @@
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">◑</button>
   <div class="header-kicker">ronant99-lgtm / autre</div>
   <h1>Liens <em>non cliniques</em></h1>
-  <p class="header-sub">Guides de voyage & ressources personnelles</p>
+  <p class="header-sub">Guides de voyage &amp; ressources personnelles</p>
 </header>
 
 <main>
 <div class="container">
 
-  <!-- TRAVEL GUIDES -->
   <div class="section-label">Guides de voyage</div>
   <div class="grid">
 
@@ -302,9 +291,25 @@
       <span class="card-badge badge-travel">🗺 Travel</span>
       <h3>Memphis</h3>
       <p>Guide de voyage pour Memphis — restaurants, activités, carte interactive Leaflet, zones de sécurité. Préparé pour le séjour SJCRH, avril 2026.</p>
-      <a class="card-link" href="memphis_guide.html">
-        Ouvrir le guide <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg>
-      </a>
+      <div class="card-meta">
+        <a class="card-link" href="memphis_guide.html">
+          Ouvrir le guide <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg>
+        </a>
+        <span class="card-tag">memphis_guide.html</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🗽</span>
+      <span class="card-badge badge-travel">🗺 Travel</span>
+      <h3>New York · Mai 2026</h3>
+      <p>Programme de visite familial — carte interactive par journée, filtres J0–J6, popups et fiches par lieu. InterContinental Times Square, 2–8 mai.</p>
+      <div class="card-meta">
+        <a class="card-link" href="ny_map.html">
+          Ouvrir la carte <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg>
+        </a>
+        <span class="card-tag">ny_map.html</span>
+      </div>
     </div>
 
   </div>
@@ -317,20 +322,15 @@
 </footer>
 
 <script>
-  // ─── THEME TOGGLE WITH LOCALSTORAGE ───
   const KEY = 'autre-theme';
   const btn = document.getElementById('themeToggle');
-
   function applyTheme(theme) {
     document.body.classList.toggle('light', theme === 'light');
     btn.textContent = theme === 'light' ? '☀' : '◑';
     localStorage.setItem(KEY, theme);
   }
-
-  // Restore saved preference
   const saved = localStorage.getItem(KEY);
   if (saved) applyTheme(saved);
-
   btn.addEventListener('click', () => {
     const next = document.body.classList.contains('light') ? 'dark' : 'light';
     applyTheme(next);
