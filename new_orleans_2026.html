@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>New Orleans & Mississippi — Avril 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+:root{
+  --cwar:#d46a6a;--cwar-bg:rgba(212,106,106,.12);
+  --ante:#c9a84c;--ante-bg:rgba(201,168,76,.13);
+  --colonial:#7eb3e8;--colonial-bg:rgba(126,179,232,.13);
+  --creole:#c09ee0;--creole-bg:rgba(192,158,224,.13);
+  --river:#5ba3d9;--river-bg:rgba(91,163,217,.13);
+  --food:#FF6B6B;--food-bg:rgba(255,107,107,.12);
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-md:0 4px 20px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f7f8fc;color:#1a1d2e;font-family:'DM Sans',sans-serif;font-size:14px}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:1000;background:linear-gradient(135deg,#1a1d2e 0%,#2d3561 100%)}
+.header-inner{padding:1.1rem 1rem 1rem}
+.header-kicker{font-size:.65rem;letter-spacing:.18em;color:rgba(255,255,255,.55);text-transform:uppercase;margin-bottom:.25rem}
+.header-h1{font-family:'DM Serif Display',serif;font-size:1.55rem;color:#fff;line-height:1.2}
+.header-h1 em{color:#FDCB6E;font-style:italic}
+.header-meta{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.2rem}
+
+/* ── Stats bar ── */
+.stats-bar{display:flex;background:#fff;border-bottom:1px solid #e8eaf0}
+.stat{flex:1;text-align:center;padding:.75rem .4rem;border-right:1px solid #e8eaf0}
+.stat:last-child{border-right:none}
+.stat-num{font-family:'DM Serif Display',serif;font-size:1.35rem;color:#1a1d2e;line-height:1}
+.stat-label{font-size:.58rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-top:.2rem}
+
+/* ── Advisory ── */
+.advisory{padding:.7rem 1rem;background:#fff3cd;border-bottom:2px solid #ffc107;font-size:.76rem;color:#856404;display:flex;align-items:flex-start;gap:.5rem}
+
+/* ── Filter bar ── */
+.filter-wrap{position:sticky;top:80px;z-index:999;background:#fff;border-bottom:1px solid #e8eaf0;overflow-x:auto;scrollbar-width:none}
+.filter-wrap::-webkit-scrollbar{display:none}
+.filter-bar{display:flex;gap:.4rem;padding:.6rem .8rem;min-width:max-content}
+.cat-btn{padding:.35rem .85rem;border-radius:20px;border:1.5px solid transparent;background:#f1f3f9;color:#6b7280;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;letter-spacing:.03em;transition:all .15s;white-space:nowrap}
+.cat-btn:hover{opacity:.82}
+.cat-btn.all.active{background:#1a1d2e;color:#fff;border-color:#1a1d2e}
+.cat-btn.active{background:var(--cb);color:var(--cc);border-color:var(--cc)}
+.cat-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
+
+/* ── Map ── */
+#map{width:100%;height:58vh;max-height:520px}
+@media(min-width:900px){#map{max-height:580px}}
+
+/* ── Leaflet popup overrides ── */
+.leaflet-popup-content-wrapper{border-radius:14px!important;box-shadow:0 8px 32px rgba(0,0,0,.18)!important;border:none!important;padding:0!important;overflow:hidden}
+.leaflet-popup-content{margin:0!important;width:268px!important}
+.leaflet-popup-tip-container{display:none}
+.popup-inner{padding:.9rem}
+.popup-cat-badge{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:10px;margin-bottom:.45rem}
+.popup-name{font-family:'DM Serif Display',serif;font-size:1rem;color:#1a1d2e;line-height:1.25;margin-bottom:.35rem}
+.popup-desc{font-size:.76rem;color:#4b5563;line-height:1.5;margin-bottom:.5rem}
+.popup-link{display:inline-block;font-size:.7rem;font-weight:600;padding:.3rem .7rem;border-radius:8px;text-decoration:none}
+
+/* ── Cards section ── */
+.cards-section{padding:.5rem .75rem 2.5rem}
+
+/* ── Category group ── */
+.cat-group{margin-bottom:1.6rem}
+.cat-header{position:sticky;top:127px;z-index:100;display:flex;align-items:center;gap:.6rem;padding:.55rem .1rem;background:#f7f8fc}
+.cat-header-pill{font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .75rem;border-radius:20px;white-space:nowrap}
+.cat-header-label{font-size:.73rem;color:#6b7280}
+
+/* ── Cards grid ── */
+.cards-list{display:grid;gap:.75rem;grid-template-columns:1fr;margin-top:.5rem}
+@media(min-width:640px){.cards-list{grid-template-columns:1fr 1fr}}
+@media(min-width:900px){.cards-list{grid-template-columns:1fr 1fr 1fr}}
+
+/* ── Card ── */
+.place-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;cursor:pointer;transition:box-shadow .15s,transform .15s}
+.place-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card-accent{width:5px;flex-shrink:0}
+.card-body{padding:.85rem;flex:1;min-width:0}
+.card-top{display:flex;align-items:flex-start;gap:.4rem;margin-bottom:.3rem}
+.card-name{font-family:'DM Serif Display',serif;font-size:.95rem;color:#1a1d2e;line-height:1.25;flex:1}
+.card-badge-sm{font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.18rem .45rem;border-radius:8px;white-space:nowrap;flex-shrink:0;margin-top:.1rem}
+.card-addr{font-size:.68rem;color:#9ca3af;margin-bottom:.4rem}
+.card-desc{font-size:.76rem;color:#4b5563;line-height:1.5;margin-bottom:.45rem}
+.card-history{font-size:.74rem;color:#6b7280;line-height:1.6;font-style:italic;margin-bottom:.5rem}
+.card-history strong{font-style:normal;color:#374151;font-weight:600}
+.card-history br{display:block;content:'';margin-top:.4rem}
+.card-note{background:#fef9f0;border-left:2px solid #FDCB6E;border-radius:0 6px 6px 0;padding:.45rem .65rem;font-size:.72rem;color:#6b7280;line-height:1.45;margin-bottom:.5rem}
+.card-footer{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.card-web-link{font-size:.68rem;font-weight:600;padding:.28rem .65rem;border-radius:8px;text-decoration:none;flex-shrink:0}
+.card-map-btn{font-size:.68rem;font-weight:600;padding:.28rem .65rem;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#4b5563;cursor:pointer;flex-shrink:0}
+.card-map-btn:hover{background:#f1f3f9}
+
+/* ── Scroll-to-top ── */
+#scrollTop{position:fixed;bottom:1.2rem;right:1rem;width:38px;height:38px;border-radius:50%;border:none;background:#1a1d2e;color:#fff;font-size:1.1rem;cursor:pointer;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2000}
+#scrollTop.show{opacity:1;pointer-events:auto}
+
+/* ── Footer ── */
+footer{padding:2rem 1rem;font-size:.68rem;color:#9ca3af;text-align:center;border-top:1px solid #e8eaf0}
+
+/* ── Print ── */
+@media print{
+  .filter-wrap,#map,.stats-bar,.advisory,#scrollTop{display:none}
+  .place-card{box-shadow:none;border:1px solid #e5e7eb;break-inside:avoid}
+  .cat-header{position:static}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-kicker">🎷 Travel &amp; History Guide · Road trip familial</div>
+    <div class="header-h1">New Orleans <em>&amp; Mississippi</em></div>
+    <div class="header-meta">24–26 avril 2026 · Base : InterContinental New Orleans, 444 St Charles Ave</div>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">27</div><div class="stat-label">Lieux</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Villes</div></div>
+  <div class="stat"><div class="stat-num">6</div><div class="stat-label">Catégories</div></div>
+  <div class="stat"><div class="stat-num">3 j</div><div class="stat-label">Durée</div></div>
+</div>
+
+<div class="advisory">
+  <span>⚠️</span>
+  <div><strong>Bourbon Street le soir</strong> — Festif mais dense et imprévisible après 22h. Rester sur les trottoirs éclairés du French Quarter touristique. Éviter les ruelles adjacentes non éclairées.</div>
+</div>
+
+<div class="filter-wrap">
+  <div class="filter-bar">
+    <button class="cat-btn all active" data-cat="all" onclick="applyFilter('all',this)">Tous</button>
+    <button class="cat-btn" data-cat="cwar" style="--cc:var(--cwar);--cb:var(--cwar-bg)" onclick="applyFilter('cwar',this)"><span class="cat-dot" style="background:var(--cwar)"></span>Guerre de Sécession</button>
+    <button class="cat-btn" data-cat="ante" style="--cc:var(--ante);--cb:var(--ante-bg)" onclick="applyFilter('ante',this)"><span class="cat-dot" style="background:var(--ante)"></span>Antebellum</button>
+    <button class="cat-btn" data-cat="colonial" style="--cc:var(--colonial);--cb:var(--colonial-bg)" onclick="applyFilter('colonial',this)"><span class="cat-dot" style="background:var(--colonial)"></span>Époque coloniale</button>
+    <button class="cat-btn" data-cat="creole" style="--cc:var(--creole);--cb:var(--creole-bg)" onclick="applyFilter('creole',this)"><span class="cat-dot" style="background:var(--creole)"></span>Héritage créole</button>
+    <button class="cat-btn" data-cat="river" style="--cc:var(--river);--cb:var(--river-bg)" onclick="applyFilter('river',this)"><span class="cat-dot" style="background:var(--river)"></span>Fleuve &amp; front d'eau</button>
+    <button class="cat-btn" data-cat="food" style="--cc:var(--food);--cb:var(--food-bg)" onclick="applyFilter('food',this)"><span class="cat-dot" style="background:var(--food)"></span>Food &amp; étapes</button>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<div class="cards-section">
+
+  <!-- ══ CWAR ══ -->
+  <div class="cat-group" data-cat="cwar">
+    <div class="cat-header">
+      <div class="cat-header-pill" style="background:var(--cwar-bg);color:var(--cwar)">⚔️ Guerre de Sécession</div>
+      <div class="cat-header-label">Le Mississippi comme enjeu stratégique · 24 avril</div>
+    </div>
+    <div class="cards-list">
+
+      <div class="place-card" onclick="flyAndOpen('vick-vc')">
+        <div class="card-accent" style="background:var(--cwar)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Vicksburg NMP — Visitor Center</div>
+            <span class="card-badge-sm" style="background:var(--cwar-bg);color:var(--cwar)">⚔️ 1</span>
+          </div>
+          <div class="card-addr">3201 Clay St, Vicksburg MS</div>
+          <div class="card-desc">Point de départ — orientation, maquette du siège, film d'introduction (20 min). Récupérer la carte du circuit en voiture.</div>
+          <div class="card-history"><strong>Vicksburg, « le Gibraltar du Mississippi ».</strong> En 1863, contrôler le fleuve c'est couper la Confédération en deux. Perchée sur des falaises de 70 m, la ville est imprenable par voie d'eau. Grant tente cinq approches différentes avant d'imposer un siège de 47 jours. Civils et soldats vivent sous bombardement continu, creusant des <em>bombproofs</em> dans les falaises d'argile — on finit par manger des mules et des rats. La reddition du 4 juillet 1863, lendemain de Gettysburg, isole définitivement la Confédération. Les habitants de Vicksburg refusent de fêter le 4 juillet pendant 81 ans, jusqu'en 1944.</div>
+          <div class="card-note">💬 Compter 3h minimum pour le tour en voiture avec arrêts. Le parc conserve 1 330 monuments d'États et 20 miles de tranchées.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.nps.gov/vick/" target="_blank" style="background:var(--cwar-bg);color:var(--cwar)" onclick="event.stopPropagation()">🌐 NPS.gov</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('vick-vc')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('vick-golyer')">
+        <div class="card-accent" style="background:var(--cwar)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Battery De Golyer</div>
+            <span class="card-badge-sm" style="background:var(--cwar-bg);color:var(--cwar)">⚔️ 2</span>
+          </div>
+          <div class="card-addr">Vicksburg NMP · tour en voiture</div>
+          <div class="card-desc">Position d'artillerie de l'Union — panorama sur les lignes de siège et le ravin central.</div>
+          <div class="card-history"><strong>22 mai 1863 — l'assaut général.</strong> La 6th Michigan Battery soutient l'attaque frontale sur le Railroad Redoubt depuis cette position. Grant ordonne l'assaut sur un faux rapport de McClernand affirmant avoir percé les lignes. Résultat : 3 199 hommes de l'Union tués en quelques heures, pour aucun gain territorial. Treize soldats reçoivent la Médaille d'honneur du Congrès ce seul jour pour avoir tenté de franchir les remparts sous le feu.</div>
+          <div class="card-note">💬 Meilleur point de vue du parc — ne pas manquer.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('vick-golyer')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('vick-wi')">
+        <div class="card-accent" style="background:var(--cwar)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Wisconsin Memorial</div>
+            <span class="card-badge-sm" style="background:var(--cwar-bg);color:var(--cwar)">⚔️ 3</span>
+          </div>
+          <div class="card-addr">Vicksburg NMP · tour en voiture</div>
+          <div class="card-desc">Un des 1 330 monuments d'États du parc — coupole en granit blanc dominant le panorama.</div>
+          <div class="card-history">Le Wisconsin engage plus de <strong>7 500 soldats</strong> dans la campagne de Vicksburg ; 1 700 n'en reviennent pas. Chacun des 28 États de l'Union représentés a financé son propre monument — de l'obélisque sobre à la rotonde néoclassique. Ce paysage mémoriel unique au monde est comparable à Gettysburg en densité symbolique.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('vick-wi')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('uss-cairo')">
+        <div class="card-accent" style="background:var(--cwar)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">USS Cairo — Gunboat &amp; Museum</div>
+            <span class="card-badge-sm" style="background:var(--cwar-bg);color:var(--cwar)">⚔️ 4</span>
+          </div>
+          <div class="card-addr">Vicksburg NMP</div>
+          <div class="card-desc">Seul ironclad de la guerre civile conservé. Coulé 1862, renfloué 1964 après 102 ans de sédimentation.</div>
+          <div class="card-history"><strong>12 décembre 1862 — première victime d'une mine électrique.</strong> Une torpille à détonation électrique — deux bouteilles de verre remplies de poudre, reliées par un fil à une batterie galvanique actionnée depuis la berge — coule le <em>Cairo</em> en moins de 12 minutes sur le Yazoo River. C'est la première embarcation militaire de l'histoire détruite par une arme à détonation électrique à distance.<br>La boue anaérobie du Yazoo préserve des milliers d'objets intacts : brosses à dents, lettres, bottes, pipes, gamelles, munitions — une capsule temporelle unique de la vie à bord en 1862.</div>
+          <div class="card-note">💬 Souvent moins fréquenté en matinée — bon premier arrêt avant le tour.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('uss-cairo')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ ANTE ══ -->
+  <div class="cat-group" data-cat="ante">
+    <div class="cat-header">
+      <div class="cat-header-pill" style="background:var(--ante-bg);color:var(--ante)">🌿 Antebellum</div>
+      <div class="cat-header-label">Économie sucrière et mémoire de l'esclavage · 25 avril matin</div>
+    </div>
+    <div class="cards-list">
+
+      <div class="place-card" onclick="flyAndOpen('oak-alley')">
+        <div class="card-accent" style="background:var(--ante)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Oak Alley Plantation</div>
+            <span class="card-badge-sm" style="background:var(--ante-bg);color:var(--ante)">🌿 1</span>
+          </div>
+          <div class="card-addr">3645 LA-18, Vacherie LA 70090 · déjeuner sur place</div>
+          <div class="card-desc">Plantation sucrière de 1839. 28 chênes centenaires, mansion Greek Revival, exposition sur l'histoire des personnes asservies.</div>
+          <div class="card-history"><strong>Les 28 chênes verts</strong> sont plantés vers 1699–1710 — soit 130 ans avant la construction de la maison — probablement par un colon français ou des personnes asservies. L'allée de 240 m était visible depuis le Mississippi ; les bateliers l'appellent «&nbsp;Oak Alley&nbsp;», surnom qui remplace le nom officiel <em>Bon Séjour</em>.<br><strong>L'économie sucrière esclavagiste</strong> est l'une des plus brutales : la canne doit être broyée dans les 24–48h après la coupe. La <em>grinding season</em> (oct.–déc.) impose 18 à 20h de travail continu autour des chaudières. Environ 100 personnes asservies vivent ici. Depuis 2015, les cabanes reconstituées et l'exposition <em>«&nbsp;Slavery at Oak Alley&nbsp;»</em> recentrent le récit sur leurs histoires individuelles nominatives.</div>
+          <div class="card-note">💬 Prévoir : mansion (~45 min) + cabanes (~30 min) avant le déjeuner créole au restaurant du domaine.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.oakalleyplantation.com/" target="_blank" style="background:var(--ante-bg);color:var(--ante)" onclick="event.stopPropagation()">🌐 Site officiel</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('oak-alley')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ COLONIAL ══ -->
+  <div class="cat-group" data-cat="colonial">
+    <div class="cat-header">
+      <div class="cat-header-pill" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ Époque coloniale</div>
+      <div class="cat-header-label">1718–1803 · Pouvoir français et espagnol dans le Vieux Carré</div>
+    </div>
+    <div class="cards-list">
+
+      <div class="place-card" onclick="flyAndOpen('jeanne-arc')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Statue de Jeanne d'Arc</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 1</span>
+          </div>
+          <div class="card-addr">Decatur St &amp; Old Levee St · 1er point visite guidée NOLWT</div>
+          <div class="card-desc">Statue équestre offerte par la France en 1972 — réplique de celle de la rue de Rivoli à Paris.</div>
+          <div class="card-history">Symbole du lien franco-louisianais : la Louisiane est colonie française de <strong>1682 à 1762</strong>, puis de 1800 à 1803. La vente de la Louisiane à Jefferson — 15 millions de dollars, soit environ 4 cents l'hectare — est l'une des transactions territoriales les plus importantes de l'histoire. La statue marque le point de départ naturel d'une lecture de la ville par le fleuve.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('jeanne-arc')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('cathedrale')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Cathédrale Saint-Louis</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 2</span>
+          </div>
+          <div class="card-addr">615 Pere Antoine Alley, Jackson Square</div>
+          <div class="card-desc">Plus ancienne cathédrale catholique en activité continue aux États-Unis — fondée 1718, édifice actuel 1794.</div>
+          <div class="card-history">Fondée avec la ville en <strong>1718</strong> par Bienville. Reconstruite après le grand incendie espagnol de 1788, financée par <strong>Don Andrés Almonester y Roxas</strong> (père de la Baronne Pontalba). Les trois flèches caractéristiques sont ajoutées en 1851. Elle marque le centre du pouvoir religieux colonial — les processions officielles françaises et espagnoles partaient et se terminaient ici.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://stlouiscathedral.org/" target="_blank" style="background:var(--colonial-bg);color:var(--colonial)" onclick="event.stopPropagation()">🌐 Site</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('cathedrale')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('chartres')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Chartres Street — axe fondateur</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 3</span>
+          </div>
+          <div class="card-addr">French Quarter, New Orleans</div>
+          <div class="card-desc">Cathédrale, Cabildo, Presbytère, Ursulines, Beauregard-Keyes — 300 ans de pouvoir colonial en une seule rue.</div>
+          <div class="card-history">Nommée en hommage au duc de Chartres, cette rue est l'axe du <strong>pouvoir institutionnel colonial</strong>. Le <em>Cabildo</em> (1799, gouvernement espagnol) et le <em>Presbytère</em> (1791) flanquent la cathédrale — ils abritent aujourd'hui le Louisiana State Museum. Suivre Chartres du nord au sud, c'est traverser trois siècles d'institutions sans quitter un seul trottoir.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('chartres')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('ursuline')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Old Ursuline Convent Museum</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 4</span>
+          </div>
+          <div class="card-addr">1100 Chartres St, New Orleans</div>
+          <div class="card-desc">Plus vieux bâtiment subsistant de la vallée du Mississippi (1745–1752) — architecture coloniale française intacte.</div>
+          <div class="card-history">Les Ursulines arrivent à La Nouvelle-Orléans en <strong>1727</strong> pour soigner les malades à l'hôpital royal. Elles fondent le premier hôpital, la première école pour filles, et la première école pour femmes esclaves et amérindiennes des États-Unis. La construction du couvent actuel (1745–1752) précède de 24 ans la signature de la Déclaration d'Indépendance. Seul exemple intact d'architecture coloniale <strong>française</strong> en Louisiane.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.ursulineconventmuseum.com/" target="_blank" style="background:var(--colonial-bg);color:var(--colonial)" onclick="event.stopPropagation()">🌐 Site</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('ursuline')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('villa-convento')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Hotel Villa Convento</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 5</span>
+          </div>
+          <div class="card-addr">616 Ursulines Ave, New Orleans</div>
+          <div class="card-desc">Petit hôtel dans un bâtiment Greek Revival de 1833, à deux pas du couvent — tissu urbain créole préservé.</div>
+          <div class="card-history">Bâtiment de <strong>1833</strong>, l'un des plus anciens immeubles d'habitation encore en activité du Vieux Carré. La rue Ursulines est l'une des rares à avoir conservé son nom et son tracé colonial d'origine. Il longe l'axe du couvent, illustrant la continuité du tissu urbain depuis l'époque espagnole. Point de la visite guidée NOLWT.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.villaconvento.com/" target="_blank" style="background:var(--colonial-bg);color:var(--colonial)" onclick="event.stopPropagation()">🌐 Site</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('villa-convento')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('pirates-alley')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Pirates Alley</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 6</span>
+          </div>
+          <div class="card-addr">Entre la cathédrale et le Cabildo</div>
+          <div class="card-desc">Passage étroit longeant la cathédrale — légende flibustière et résidence de Faulkner en 1925.</div>
+          <div class="card-history">Ancienne <em>Orleans Alley</em>, rebaptisée au XIXᵉ siècle — invention romantique associant le lieu à Jean Laffitte. <strong>William Faulkner</strong> résida au n° 624 en 1925, où il écrivit son premier roman, <em>Soldiers' Pay</em>. La librairie Faulkner House Books occupe aujourd'hui cet appartement. À l'extrémité ouest, St. Anthony's Garden — jardin clos derrière la cathédrale, ancien lieu des duels d'honneur créoles.</div>
+          <div class="card-note">💬 À voir de nuit au retour — l'éclairage contre la façade de la cathédrale est saisissant.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('pirates-alley')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('faulkner')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Faulkner House Books</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 7</span>
+          </div>
+          <div class="card-addr">624 Pirates Alley, New Orleans</div>
+          <div class="card-desc">Appartement de Faulkner (1925), converti en librairie indépendante — littérature du Sud américain.</div>
+          <div class="card-history">L'une des meilleures librairies indépendantes du Sud. Spécialisée en <strong>Faulkner, Flannery O'Connor, Tennessee Williams, Truman Capote</strong>. La structure de l'appartement est inchangée. Éditions rares et signées, essais sur La Nouvelle-Orléans et sur la tradition du <em>Southern Gothic</em>.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.faulknerhouse.net/" target="_blank" style="background:var(--colonial-bg);color:var(--colonial)" onclick="event.stopPropagation()">🌐 Site</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('faulkner')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('st-anthony')">
+        <div class="card-accent" style="background:var(--colonial)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">St. Anthony's Garden</div>
+            <span class="card-badge-sm" style="background:var(--colonial-bg);color:var(--colonial)">⚜️ 8</span>
+          </div>
+          <div class="card-addr">Derrière la cathédrale Saint-Louis</div>
+          <div class="card-desc">Jardin clos — meilleure vue sur la façade arrière de la cathédrale et havre de calme dans le Vieux Carré.</div>
+          <div class="card-history">Au XIXᵉ siècle, lieu traditionnel des <strong>duels d'honneur créoles</strong> — pratique formellement interdite mais tolérée entre gentilshommes. Une statue du Sacré-Cœur y trône depuis 1849. Accessible depuis Pirates Alley ou Royal Street, c'est l'un des rares espaces de silence dans le Vieux Carré touristique.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('st-anthony')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CREOLE ══ -->
+  <div class="cat-group" data-cat="creole">
+    <div class="cat-header">
+      <div class="cat-header-pill" style="background:var(--creole-bg);color:var(--creole)">🏛️ Héritage créole</div>
+      <div class="cat-header-label">Jackson Square, Pontalba, cimetières et vie urbaine · 25 avril</div>
+    </div>
+    <div class="cards-list">
+
+      <div class="place-card" onclick="flyAndOpen('jackson-sq')">
+        <div class="card-accent" style="background:var(--creole)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Jackson Square &amp; Pontalba Buildings</div>
+            <span class="card-badge-sm" style="background:var(--creole-bg);color:var(--creole)">🏛️ 1</span>
+          </div>
+          <div class="card-addr">Jackson Square, New Orleans</div>
+          <div class="card-desc">Ancienne Place d'Armes coloniale. Statue équestre Jackson (1856). Premiers immeubles d'appartements des États-Unis (Pontalba, 1849–1851).</div>
+          <div class="card-history"><strong>La bataille de La Nouvelle-Orléans, 8 janvier 1815.</strong> Jackson défait 8 000 soldats britanniques avec 4 700 hommes : milices du Tennessee, deux bataillons de <em>Free Men of Color</em>, guerriers Choctaw, pirates de Laffitte. Ironie : le traité de Gand mettant fin à la guerre est signé 15 jours plus tôt en Belgique — les nouvelles mettent des semaines à traverser l'Atlantique. La statue équestre de Clark Mills (1856) tient en équilibre sur les seuls sabots arrière — prouesse technique rare à l'époque.<br><strong>Micaela Almonester de Pontalba</strong> (1795–1874) : fille de Don Andrés qui finança la reconstruction de la cathédrale, mariée à 15 ans à un noble français, survit à une tentative d'assassinat par son beau-père qui lui arrache deux doigts. Divorcée, elle revient à La Nouvelle-Orléans et fait construire les deux immeubles (1849–1851) — considérés comme les premiers immeubles d'appartements des États-Unis. Le monogramme <strong>«&nbsp;AP&nbsp;»</strong> forgé dans les balustrades est une signature délibérée : ses deux noms, Almonester et Pontalba, pas celui de son mari.</div>
+          <div class="card-note">💬 Observer les initiales AP dans les ferronneries des balustrades — souvent inaperçu des visiteurs.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('jackson-sq')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('beauregard')">
+        <div class="card-accent" style="background:var(--creole)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Beauregard-Keyes House</div>
+            <span class="card-badge-sm" style="background:var(--creole-bg);color:var(--creole)">🏛️ 2</span>
+          </div>
+          <div class="card-addr">1113 Chartres St, New Orleans</div>
+          <div class="card-desc">Demeure Greek Revival (1826) — deux vies illustres sous un même toit.</div>
+          <div class="card-history"><strong>P.G.T. Beauregard</strong>, général confédéré qui ordonna le premier tir sur Fort Sumter (12 avril 1861) déclenchant la guerre civile, y habite brièvement en 1865–66 après la défaite. <strong>Frances Parkinson Keyes</strong> (1945–70) y écrit plusieurs romans dont <em>Dinner at Antoine's</em> (1948) — bestseller qui fait connaître la cuisine créole au grand public américain. La maison incarne la double mémoire créole et confédérée du Vieux Carré.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://bkhouse.org/" target="_blank" style="background:var(--creole-bg);color:var(--creole)" onclick="event.stopPropagation()">🌐 Site</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('beauregard')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('cemetery1')">
+        <div class="card-accent" style="background:var(--creole)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">St. Louis Cemetery No. 1</div>
+            <span class="card-badge-sm" style="background:var(--creole-bg);color:var(--creole)">🏛️ 3</span>
+          </div>
+          <div class="card-addr">501 Basin St · visite guidée 25 avril après-midi</div>
+          <div class="card-desc">Fondé 1789. Tombes hors-sol (<em>oven vaults</em>), sociétés mutuelles créoles, tombe de Marie Laveau.</div>
+          <div class="card-history"><strong>Pourquoi des tombes hors-sol ?</strong> Le delta alluvial sature d'eau à moins d'un mètre — les premiers cercueils remontaient à la surface lors des crues. La règle «&nbsp;un an et un jour&nbsp;» : sous la chaleur subtropicale, les restes sont ensuite repoussés au fond de la niche, libérant la place. Une même niche peut accueillir des dizaines de personnes sur deux siècles. Les <strong>tombes de sociétés mutuelles</strong> (créoles de couleur libres, Italiens, Irlandais) sont les plus imposantes — ces sociétés garantissaient des funérailles dignes à leurs membres.<br><strong>Marie Laveau</strong> (1801–1881), reine du vaudou louisianais : synthèse créole entre vaudou haïtien, catholicisme et pratiques amérindiennes. La tradition des croix «&nbsp;XXX&nbsp;» sur sa tombe est une invention touristique sans origine vaudoue. <strong>Homer Plessy</strong> (<em>Plessy v. Ferguson</em>, 1896) y est également inhumé. Visite en groupe guidé agréé obligatoire depuis 2015 (dégradations sur la tombe Laveau).</div>
+          <div class="card-note">💬 Visite guidée NOLWT — réserver à l'avance. Itinéraire : Royal St → St. Louis St → cimetière → retour par Conti St → Royal St.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.nolwt.com/" target="_blank" style="background:var(--creole-bg);color:var(--creole)" onclick="event.stopPropagation()">🌐 NOLWT</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('cemetery1')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('royal-st')">
+        <div class="card-accent" style="background:var(--creole)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Royal Street — esthétique créole</div>
+            <span class="card-badge-sm" style="background:var(--creole-bg);color:var(--creole)">🏛️ 4</span>
+          </div>
+          <div class="card-addr">French Quarter, New Orleans</div>
+          <div class="card-desc">Balcons en fer forgé, galeries couvertes, antiquaires, demeures pastel — l'axe créole par excellence.</div>
+          <div class="card-history">L'architecture hybride franco-espagnole est <strong>adaptée au climat subtropical</strong> : les galeries protègent de la pluie tropicale, les coursives créent une ventilation naturelle. Le fer forgé — puis de fonte industrielle après 1840 — est une spécialité des artisans louisianais, souvent d'origine africaine ou haïtienne. Royal Street est l'alternative paisible à Bourbon : même tissu urbain, ambiance radicalement différente.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('royal-st')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('bourbon')">
+        <div class="card-accent" style="background:var(--creole)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Bourbon Street</div>
+            <span class="card-badge-sm" style="background:var(--creole-bg);color:var(--creole)">🏛️ 5</span>
+          </div>
+          <div class="card-addr">French Quarter, New Orleans · soirée 25 avril</div>
+          <div class="card-desc">Axe festif piétonnier — hier berceau du jazz, aujourd'hui caricature assumée.</div>
+          <div class="card-history">Nommée en hommage à la maison royale française. Au XIXᵉ siècle : axe culturel de premier rang — théâtres, opéras, cabarets. Dans les années <strong>1910–1920</strong> : berceau du jazz de La Nouvelle-Orléans, à proximité de Storyville (quartier de plaisirs légaux, fermé en 1917 par le gouvernement fédéral). La transformation en strip touristique date des années 1950–60. Voir de nuit après le dîner ; retour par St. Louis Cathedral et Chartres de nuit.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('bourbon')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ RIVER ══ -->
+  <div class="cat-group" data-cat="river">
+    <div class="cat-header">
+      <div class="cat-header-pill" style="background:var(--river-bg);color:var(--river)">🌊 Fleuve &amp; front d'eau</div>
+      <div class="cat-header-label">Le Mississippi comme épine dorsale · retour hôtel samedi soir par le Riverwalk</div>
+    </div>
+    <div class="cards-list">
+
+      <div class="place-card" onclick="flyAndOpen('wash-artillery')">
+        <div class="card-accent" style="background:var(--river)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Washington Artillery Park</div>
+            <span class="card-badge-sm" style="background:var(--river-bg);color:var(--river)">🌊 1</span>
+          </div>
+          <div class="card-addr">Decatur St, face à Jackson Square</div>
+          <div class="card-desc">Esplanade surélevée — meilleure vue sur le Mississippi depuis le Vieux Carré. Panorama sur les barges et le fleuve.</div>
+          <div class="card-history">Rend hommage au <strong>Washington Artillery Battalion</strong>, unité confédérée de La Nouvelle-Orléans. Le fleuve est large de <strong>600 m</strong> à cet endroit, courant à 2–3 km/h. C'est depuis ce levee que partaient les bateaux à vapeur pour Saint-Louis, Cincinnati et Pittsburgh au XIXᵉ siècle — La Nouvelle-Orléans était alors le deuxième port des États-Unis, après New York.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('wash-artillery')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('french-market')">
+        <div class="card-accent" style="background:var(--river)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">French Market</div>
+            <span class="card-badge-sm" style="background:var(--river-bg);color:var(--river)">🌊 2</span>
+          </div>
+          <div class="card-addr">1 French Market Pl, Decatur St</div>
+          <div class="card-desc">Marché en activité continue depuis 1791 — un des plus anciens marchés publics des États-Unis.</div>
+          <div class="card-history">Sur l'emplacement d'un <strong>poste de traite amérindien</strong> antérieur à la fondation de la ville. Marché public depuis <strong>1791</strong>, soit neuf ans avant la fondation de Washington D.C. Le bâtiment actuel est un programme WPA des années 1930. Du café-épices en semaine au flea market du week-end, il perpétue une fonction commerciale ininterrompue sur trois siècles.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.frenchmarket.org/" target="_blank" style="background:var(--river-bg);color:var(--river)" onclick="event.stopPropagation()">🌐 Site</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('french-market')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('decatur')">
+        <div class="card-accent" style="background:var(--river)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Decatur Street — front du port</div>
+            <span class="card-badge-sm" style="background:var(--river-bg);color:var(--river)">🌊 3</span>
+          </div>
+          <div class="card-addr">French Quarter, New Orleans</div>
+          <div class="card-desc">Artère historique du port colonial — entrepôts de coton et de sucre, premier levee de Louisiane (1724).</div>
+          <div class="card-history">Le <em>levee</em> qui longe Decatur est le <strong>premier grand chantier d'ingénierie hydraulique français</strong> en Louisiane (1724) — digue de terre maçonnée protégeant la ville des crues. Au XVIIIᵉ siècle, des <em>flatboats</em> descendaient du Kentucky et de l'Ohio chargées de farine, de whisky et de peaux ; leurs pilotes vendaient leur cargaison et rentraient à pied par la Natchez Trace.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('decatur')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('canal-st')">
+        <div class="card-accent" style="background:var(--river)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Canal Street — la ligne de fracture</div>
+            <span class="card-badge-sm" style="background:var(--river-bg);color:var(--river)">🌊 4</span>
+          </div>
+          <div class="card-addr">Canal Street, New Orleans</div>
+          <div class="card-desc">Frontière historique entre Vieux Carré créole et secteur américain — origine de l'expression «&nbsp;neutral ground&nbsp;».</div>
+          <div class="card-history">Après la vente de la Louisiane en <strong>1803</strong>, deux cultures coexistent sans se mélanger. Le large terre-plein central — prévu pour un canal jamais réalisé — matérialise la frontière. Les Américains disent «&nbsp;across Canal Street&nbsp;» pour désigner le quartier créole comme un pays étranger. L'expression <strong>«&nbsp;neutral ground&nbsp;»</strong> est restée dans l'argot louisianais pour désigner tout terre-plein, dans tout l'État.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('canal-st')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ FOOD ══ -->
+  <div class="cat-group" data-cat="food">
+    <div class="cat-header">
+      <div class="cat-header-pill" style="background:var(--food-bg);color:var(--food)">🍽️ Food &amp; étapes</div>
+      <div class="cat-header-label">Cuisine locale et pauses de route</div>
+    </div>
+    <div class="cards-list">
+
+      <div class="place-card" onclick="flyAndOpen('kfc-vick')">
+        <div class="card-accent" style="background:var(--food)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">KFC — étape Vicksburg</div>
+            <span class="card-badge-sm" style="background:var(--food-bg);color:var(--food)">🍽️ 1</span>
+          </div>
+          <div class="card-addr">2915 Clay St, Vicksburg MS · 24 avril, déjeuner</div>
+          <div class="card-desc">Pause repas sur la route depuis Memphis (I-20 West) avant la visite du parc national.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('kfc-vick')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('whataburger')">
+        <div class="card-accent" style="background:var(--food)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Whataburger — Jackson MS</div>
+            <span class="card-badge-sm" style="background:var(--food-bg);color:var(--food)">🍽️ 2</span>
+          </div>
+          <div class="card-addr">Jackson MS · nuit du 24 au 25 avril · Best Western Plus, 725 Larson St</div>
+          <div class="card-desc">Étape de nuit à Jackson. Repas du soir — chaîne texane fondée à Corpus Christi en 1950, emblématique du Deep South.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('whataburger')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('oakalley-resto')">
+        <div class="card-accent" style="background:var(--food)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Restaurant Oak Alley Plantation</div>
+            <span class="card-badge-sm" style="background:var(--food-bg);color:var(--food)">🍽️ 3</span>
+          </div>
+          <div class="card-addr">Oak Alley, Vacherie LA · 25 avril, déjeuner</div>
+          <div class="card-desc">Cuisine créole louisianaise dans les dépendances de la plantation — gumbo de fruits de mer, étouffée de crevettes, bread pudding sauce whisky.</div>
+          <div class="card-footer">
+            <a class="card-web-link" href="https://www.oakalleyplantation.com/restaurant" target="_blank" style="background:var(--food-bg);color:var(--food)" onclick="event.stopPropagation()">🌐 Réservation</a>
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('oakalley-resto')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('streetcar-cafe')">
+        <div class="card-accent" style="background:var(--food)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Streetcar Café</div>
+            <span class="card-badge-sm" style="background:var(--food-bg);color:var(--food)">🍽️ 4</span>
+          </div>
+          <div class="card-addr">312 St Charles Ave, New Orleans · 24 avril, dîner</div>
+          <div class="card-desc">Dîner du premier soir, à deux pas de l'InterContinental. St. Charles Ave — axe du plus vieux tramway électrique en service continu des États-Unis (depuis 1835).</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('streetcar-cafe')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="place-card" onclick="flyAndOpen('cafe-beignet')">
+        <div class="card-accent" style="background:var(--food)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-name">Café Beignet — Bourbon Street</div>
+            <span class="card-badge-sm" style="background:var(--food-bg);color:var(--food)">🍽️ 5</span>
+          </div>
+          <div class="card-addr">Bourbon St, New Orleans · 25 avril, soir</div>
+          <div class="card-desc">Beignets louisianais — pâte levée frite, sucre glace. Café au lait à la chicorée. Tradition culinaire coloniale française.</div>
+          <div class="card-history">Le <strong>café au lait à la chicorée</strong> est une tradition depuis la pénurie de café sous le blocus anglais de 1814 — la chicorée coupait et allongeait le café rare. Cette pratique est restée. Alternative à Café Du Monde pour éviter les files.</div>
+          <div class="card-note">💬 Commander au comptoir, manger dehors — le sucre glace est redoutable sur les vêtements sombres.</div>
+          <div class="card-footer">
+            <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('cafe-beignet')">📍 Carte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /cards-section -->
+
+<footer>Guide personnel interactif · Road trip avril 2026</footer>
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+var DEFAULT_LAT=31.0,DEFAULT_LNG=-90.5,DEFAULT_ZOOM=7;
+
+var map=L.map('map').setView([DEFAULT_LAT,DEFAULT_LNG],DEFAULT_ZOOM);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  attribution:'©OpenStreetMap ©CARTO'
+}).addTo(map);
+
+function mkIcon(color,sz,num){
+  sz=sz||28;
+  var inner=num?'<span style="color:#fff;font-size:'+(sz*.44)+'px;font-weight:700;line-height:1">'+num+'</span>':'';
+  return L.divIcon({
+    className:'',
+    html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+color+
+         ';border:2.5px solid rgba(255,255,255,.95);'+
+         'box-shadow:0 3px 10px rgba(0,0,0,.3),0 0 0 4px '+color+'30;'+
+         'display:flex;align-items:center;justify-content:center">'+inner+'</div>',
+    iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-(sz/2+4)]
+  });
+}
+
+var COLORS={cwar:'#d46a6a',ante:'#c9a84c',colonial:'#7eb3e8',creole:'#c09ee0',river:'#5ba3d9',food:'#FF6B6B'};
+var CAT_LABELS={cwar:'⚔️ Guerre de Sécession',ante:'🌿 Antebellum',colonial:'⚜️ Époque coloniale',creole:'🏛️ Héritage créole',river:'🌊 Fleuve',food:'🍽️ Food & étapes'};
+
+var PLACES=[
+  {id:'vick-vc',    cat:'cwar',     lat:32.3452,lng:-90.8733,name:'Vicksburg NMP — Visitor Center',    desc:'Point de départ — orientation, maquette du siège, film d\'introduction (20 min).',url:'https://www.nps.gov/vick/'},
+  {id:'vick-golyer',cat:'cwar',     lat:32.3489,lng:-90.8802,name:'Battery De Golyer',                 desc:'Position d\'artillerie Union — panorama sur les lignes de siège.',url:null},
+  {id:'vick-wi',    cat:'cwar',     lat:32.3510,lng:-90.8770,name:'Wisconsin Memorial',                desc:'Un des 1 330 monuments d\'États du parc — coupole en granit blanc.',url:null},
+  {id:'uss-cairo',  cat:'cwar',     lat:32.3425,lng:-90.8715,name:'USS Cairo — Gunboat & Museum',      desc:'Seul ironclad de la guerre civile conservé. Coulé 1862, renfloué 1964.',url:null},
+  {id:'oak-alley',  cat:'ante',     lat:30.0065,lng:-90.7757,name:'Oak Alley Plantation',              desc:'Plantation sucrière 1839. 28 chênes centenaires. Exposition esclavage.',url:'https://www.oakalleyplantation.com/'},
+  {id:'jeanne-arc', cat:'colonial', lat:29.9582,lng:-90.0637,name:'Statue de Jeanne d\'Arc',           desc:'Offerte par la France en 1972, symbole du lien franco-louisianais.',url:null},
+  {id:'cathedrale', cat:'colonial', lat:29.9576,lng:-90.0634,name:'Cathédrale Saint-Louis',            desc:'Plus ancienne cathédrale catholique en activité continue aux États-Unis.',url:'https://stlouiscathedral.org/'},
+  {id:'chartres',   cat:'colonial', lat:29.9558,lng:-90.0625,name:'Chartres Street — axe fondateur',   desc:'Cathédrale, Cabildo, Presbytère, Ursulines — axe du pouvoir colonial.',url:null},
+  {id:'ursuline',   cat:'colonial', lat:29.9533,lng:-90.0591,name:'Old Ursuline Convent Museum',       desc:'Plus vieux bâtiment de la vallée du Mississippi (1745–1752).',url:'https://www.ursulineconventmuseum.com/'},
+  {id:'villa-convento',cat:'colonial',lat:29.9539,lng:-90.0600,name:'Hotel Villa Convento',            desc:'Bâtiment Greek Revival 1833, tissu urbain créole préservé.',url:'https://www.villaconvento.com/'},
+  {id:'pirates-alley',cat:'colonial',lat:29.9584,lng:-90.0644,name:'Pirates Alley',                   desc:'Passage longeant la cathédrale — légende flibustière, résidence de Faulkner.',url:null},
+  {id:'faulkner',   cat:'colonial', lat:29.9586,lng:-90.0647,name:'Faulkner House Books',              desc:'Appartement de Faulkner (1925), librairie spécialisée littérature du Sud.',url:'https://www.faulknerhouse.net/'},
+  {id:'st-anthony', cat:'colonial', lat:29.9573,lng:-90.0632,name:"St. Anthony's Garden",             desc:'Jardin derrière la cathédrale — anciens duels d\'honneur créoles.',url:null},
+  {id:'jackson-sq', cat:'creole',   lat:29.9575,lng:-90.0634,name:'Jackson Square & Pontalba',         desc:'Place d\'Armes coloniale. Statue Jackson 1856. Premiers apparts des États-Unis.',url:null},
+  {id:'beauregard', cat:'creole',   lat:29.9536,lng:-90.0590,name:'Beauregard-Keyes House',            desc:'Demeure Greek Revival 1826 — Beauregard confédéré, Frances P. Keyes.',url:'https://bkhouse.org/'},
+  {id:'cemetery1',  cat:'creole',   lat:29.9664,lng:-90.0714,name:'St. Louis Cemetery No. 1',          desc:'1789 — tombes hors-sol, sociétés mutuelles, tombe de Marie Laveau.',url:'https://www.nolwt.com/'},
+  {id:'royal-st',   cat:'creole',   lat:29.9558,lng:-90.0650,name:'Royal Street — esthétique créole',  desc:'Balcons en fer forgé, antiquaires, demeures pastel.',url:null},
+  {id:'bourbon',    cat:'creole',   lat:29.9570,lng:-90.0694,name:'Bourbon Street',                    desc:'Axe festif — berceau du jazz, aujourd\'hui strip touristique.',url:null},
+  {id:'wash-artillery',cat:'river', lat:29.9583,lng:-90.0621,name:'Washington Artillery Park',         desc:'Meilleure vue sur le Mississippi depuis le Vieux Carré.',url:null},
+  {id:'french-market',cat:'river',  lat:29.9560,lng:-90.0602,name:'French Market',                    desc:'Marché en activité depuis 1791 — un des plus anciens des États-Unis.',url:'https://www.frenchmarket.org/'},
+  {id:'decatur',    cat:'river',    lat:29.9568,lng:-90.0617,name:'Decatur Street — front du port',    desc:'Artère du port colonial, premier levee de Louisiane (1724).',url:null},
+  {id:'canal-st',   cat:'river',    lat:29.9600,lng:-90.0730,name:'Canal Street — ligne de fracture',  desc:'Frontière créole / américain post-1803. Origine de «&nbsp;neutral ground&nbsp;».',url:null},
+  {id:'kfc-vick',   cat:'food',     lat:32.3410,lng:-90.8601,name:'KFC — Vicksburg',                  desc:'Pause déjeuner avant la visite du parc national.',url:null},
+  {id:'whataburger',cat:'food',     lat:32.2988,lng:-90.1848,name:'Whataburger — Jackson MS',          desc:'Repas du soir, étape nuit Best Western Plus Jackson.',url:null},
+  {id:'oakalley-resto',cat:'food',  lat:30.0070,lng:-90.7750,name:'Restaurant Oak Alley',              desc:'Cuisine créole louisianaise — gumbo, étouffée, bread pudding.',url:'https://www.oakalleyplantation.com/restaurant'},
+  {id:'streetcar-cafe',cat:'food',  lat:29.9485,lng:-90.0731,name:'Streetcar Café',                   desc:'Dîner premier soir, 312 St Charles Ave — en face de l\'InterContinental.',url:null},
+  {id:'cafe-beignet',cat:'food',    lat:29.9568,lng:-90.0693,name:'Café Beignet',                      desc:'Beignets louisianais + café au lait chicorée. Alternative sans file à Café Du Monde.',url:null}
+];
+
+var markers={},allMarkers=[],catCounters={};
+
+PLACES.forEach(function(p){
+  if(!catCounters[p.cat])catCounters[p.cat]=0;
+  catCounters[p.cat]++;
+  var num=catCounters[p.cat];
+  var c=COLORS[p.cat];
+  var sz=p.cat==='food'?26:28;
+  var m=L.marker([p.lat,p.lng],{icon:mkIcon(c,sz,num)}).addTo(map);
+  m._catKey=p.cat;
+  m.bindPopup(
+    '<div class="popup-inner">'+
+    '<div class="popup-cat-badge" style="background:'+c+'18;color:'+c+'">'+CAT_LABELS[p.cat]+'</div>'+
+    '<div class="popup-name">'+p.name+'</div>'+
+    '<div class="popup-desc">'+p.desc+'</div>'+
+    (p.url?'<a href="'+p.url+'" class="popup-link" target="_blank" style="background:'+c+'18;color:'+c+'">🌐 Site web</a>':'')+
+    '</div>',
+    {maxWidth:290}
+  );
+  markers[p.id]=m;
+  allMarkers.push(m);
+});
+
+function flyAndOpen(id){
+  var m=markers[id];if(!m)return;
+  map.flyTo(m.getLatLng(),15,{duration:0.8});
+  setTimeout(function(){m.openPopup();},900);
+  document.getElementById('map').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function applyFilter(cat,btn){
+  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  allMarkers.forEach(function(m){
+    if(cat==='all'||m._catKey===cat){if(!map.hasLayer(m))map.addLayer(m);}
+    else{if(map.hasLayer(m))map.removeLayer(m);}
+  });
+  document.querySelectorAll('.cat-group').forEach(function(g){
+    g.style.display=(cat==='all'||g.getAttribute('data-cat')===cat)?'':'none';
+  });
+  if(cat!=='all'){
+    var pts=PLACES.filter(function(p){return p.cat===cat;}).map(function(p){return[p.lat,p.lng];});
+    if(pts.length)map.flyToBounds(pts,{padding:[50,50],duration:0.7,maxZoom:15});
+  }else{
+    map.flyTo([DEFAULT_LAT,DEFAULT_LNG],DEFAULT_ZOOM,{duration:0.5});
+  }
+}
+
+window.addEventListener('scroll',function(){
+  document.getElementById('scrollTop').classList.toggle('show',window.scrollY>300);
+},{passive:true});
+</script>
+</body>
+</html>
