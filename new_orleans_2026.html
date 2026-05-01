@@ -93,6 +93,21 @@ header{position:sticky;top:0;z-index:1000;background:linear-gradient(135deg,#1a1
 .card-history strong{font-style:normal;color:#374151;font-weight:600}
 .card-history br{display:block;content:'';margin-top:.4rem}
 .card-note{background:#fef9f0;border-left:2px solid #FDCB6E;border-radius:0 6px 6px 0;padding:.45rem .65rem;font-size:.72rem;color:#6b7280;line-height:1.45;margin-bottom:.5rem}
+
+/* ── Expandable history sub-sections ── */
+.hsec{border-top:1px solid #f0f2f7;margin-top:.55rem}
+.hsec-head{display:flex;align-items:center;gap:.45rem;padding:.48rem 0;cursor:pointer;user-select:none}
+.hsec-icon{font-size:.78rem;flex-shrink:0}
+.hsec-label{font-size:.74rem;font-weight:600;color:#374151;flex:1;line-height:1.3}
+.hsec-arrow{font-size:.58rem;color:#9ca3af;transition:transform .2s;flex-shrink:0}
+.hsec-arrow.open{transform:rotate(90deg)}
+.hsec-body{max-height:0;overflow:hidden;transition:max-height .32s ease}
+.hsec-body.open{max-height:800px}
+.hsec-body p{font-size:.76rem;color:#4b5563;line-height:1.62;margin-bottom:.5rem}
+.hsec-body p:last-child{margin-bottom:.65rem}
+.hsec-body strong{color:#1a1d2e;font-weight:600}
+.hsec-body em{font-style:italic;color:#4b5563}
+.hsec-pull{border-left:2.5px solid;padding:.4rem .65rem;border-radius:0 5px 5px 0;background:#f7f8fc;margin:.35rem 0 .5rem;font-size:.73rem;font-style:italic;color:#6b7280;line-height:1.5}
 .card-footer{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
 .card-web-link{font-size:.68rem;font-weight:600;padding:.28rem .65rem;border-radius:8px;text-decoration:none;flex-shrink:0}
 .card-map-btn{font-size:.68rem;font-weight:600;padding:.28rem .65rem;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#4b5563;cursor:pointer;flex-shrink:0}
@@ -168,7 +183,43 @@ footer{padding:2rem 1rem;font-size:.68rem;color:#9ca3af;text-align:center;border
           </div>
           <div class="card-addr">3201 Clay St, Vicksburg MS</div>
           <div class="card-desc">Point de départ — orientation, maquette du siège, film d'introduction (20 min). Récupérer la carte du circuit en voiture.</div>
-          <div class="card-history"><strong>Vicksburg, « le Gibraltar du Mississippi ».</strong> En 1863, contrôler le fleuve c'est couper la Confédération en deux. Perchée sur des falaises de 70 m, la ville est imprenable par voie d'eau. Grant tente cinq approches différentes avant d'imposer un siège de 47 jours. Civils et soldats vivent sous bombardement continu, creusant des <em>bombproofs</em> dans les falaises d'argile — on finit par manger des mules et des rats. La reddition du 4 juillet 1863, lendemain de Gettysburg, isole définitivement la Confédération. Les habitants de Vicksburg refusent de fêter le 4 juillet pendant 81 ans, jusqu'en 1944.</div>
+          <div class="card-history">
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🗺️</span>
+                <span class="hsec-label">Contexte stratégique : pourquoi Vicksburg ?</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>En 1862, le Mississippi est <strong>l'artère vitale de la Confédération</strong>. Contrôler le fleuve, c'est contrôler le ravitaillement entre le Trans-Mississippi (Texas, Arkansas, Louisiane) et les États confédérés de l'Est. L'<strong>Anaconda Plan</strong> du général Scott prévoyait exactement cela : étrangler le Sud par un blocus maritime et fluvial.</p>
+                <p>Vicksburg est surnommée <em>«&nbsp;le Gibraltar du Mississippi&nbsp;»</em> par Jefferson Davis lui-même. Perchée sur des falaises de 70 m au-dessus d'un méandre serré, la ville est imprenable par voie d'eau : les canonnières Union naviguent en plein feu des batteries confédérées sur 3 km. <strong>Tant que Vicksburg tient, le Mississippi est confédéré.</strong></p>
+                <div class="hsec-pull" style="border-color:var(--cwar)">« Vicksburg est la clé. La guerre ne peut finir tant que cette clé n'est pas en notre possession. » — Lincoln, 1862</div>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">⚡</span>
+                <span class="hsec-label">La campagne de Grant : six mois d'échecs avant la victoire</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Grant tente de prendre Vicksburg <strong>cinq fois</strong> avant le siège final. De décembre 1862 à avril 1863 : tentatives de canaux de dérivation du fleuve, d'attaques de bayous. Chaque fois, la géographie et les Confédérés résistent.</p>
+                <p>Le coup de génie arrive en <strong>avril 1863</strong> : Grant fait descendre sa flotte de nuit sous les batteries confédérées, traverse le Mississippi 80 km en aval à Bruinsburg, et remonte par les terres. En 17 jours, son armée combat <strong>5 batailles</strong>, avance de 320 km en pays ennemi sans ligne de ravitaillement fixe — vivant sur les ressources locales. C'est l'une des campagnes terrestres les plus audacieuses de la guerre civile.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🏴</span>
+                <span class="hsec-label">Le siège : 47 jours sous les bombes</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Après deux assauts frontaux meurtriers (19 et 22 mai), Grant installe le siège. Les Confédérés et les 3 500 civils vivent <strong>47 jours de bombardement continu</strong> : mortiers de l'Union tirent jour et nuit, canonnières pilonnent depuis le fleuve.</p>
+                <p>Les habitants creusent des <strong>«&nbsp;bombproofs&nbsp;»</strong> dans les falaises d'argile. Les provisions s'épuisent : on mange des mules, des rats, du pain de pois chiches moisis. Les soldats confédérés reçoivent 250 g de nourriture par jour à la fin.</p>
+                <div class="hsec-pull" style="border-color:var(--cwar)">La reddition intervient le 4 juillet 1863 — lendemain de Gettysburg. Les habitants refusent de fêter le 4 juillet pendant <strong>81 ans</strong>, jusqu'en 1944.</div>
+              </div>
+            </div>
+          </div>
           <div class="card-note">💬 Compter 3h minimum pour le tour en voiture avec arrêts. Le parc conserve 1 330 monuments d'États et 20 miles de tranchées.</div>
           <div class="card-footer">
             <a class="card-web-link" href="https://www.nps.gov/vick/" target="_blank" style="background:var(--cwar-bg);color:var(--cwar)" onclick="event.stopPropagation()">🌐 NPS.gov</a>
@@ -247,7 +298,42 @@ footer{padding:2rem 1rem;font-size:.68rem;color:#9ca3af;text-align:center;border
           </div>
           <div class="card-addr">3645 LA-18, Vacherie LA 70090 · déjeuner sur place</div>
           <div class="card-desc">Plantation sucrière de 1839. 28 chênes centenaires, mansion Greek Revival, exposition sur l'histoire des personnes asservies.</div>
-          <div class="card-history"><strong>Les 28 chênes verts</strong> sont plantés vers 1699–1710 — soit 130 ans avant la construction de la maison — probablement par un colon français ou des personnes asservies. L'allée de 240 m était visible depuis le Mississippi ; les bateliers l'appellent «&nbsp;Oak Alley&nbsp;», surnom qui remplace le nom officiel <em>Bon Séjour</em>.<br><strong>L'économie sucrière esclavagiste</strong> est l'une des plus brutales : la canne doit être broyée dans les 24–48h après la coupe. La <em>grinding season</em> (oct.–déc.) impose 18 à 20h de travail continu autour des chaudières. Environ 100 personnes asservies vivent ici. Depuis 2015, les cabanes reconstituées et l'exposition <em>«&nbsp;Slavery at Oak Alley&nbsp;»</em> recentrent le récit sur leurs histoires individuelles nominatives.</div>
+          <div class="card-history">
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🌳</span>
+                <span class="hsec-label">Les 28 chênes : plus vieux que la maison d'un siècle</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>L'allée de <strong>28 chênes verts (<em>Quercus virginiana</em>)</strong> a été plantée vers <strong>1699–1710</strong> — probablement par un colon français anonyme ou par des personnes asservies — soit <strong>130 ans avant la construction de la maison</strong>. Leurs couronnes se rejoignent en voûte sur 240 m.</p>
+                <p>La plantation s'appelait originellement <em>Bon Séjour</em>. Le surnom «&nbsp;Oak Alley&nbsp;» lui a été donné par les bateliers du Mississippi qui l'apercevaient depuis le fleuve.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🏛️</span>
+                <span class="hsec-label">Jacques Roman et Célina Pilie : qui gérait vraiment Oak Alley ?</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Jacques Télesphore Roman achète le terrain en 1836 et fait construire la maison entre 1837 et 1839. Mais Jacques est surtout un homme mondain, souvent absent à La Nouvelle-Orléans. C'est sa femme, <strong>Marie Célina Pilie</strong>, qui gère au quotidien la plantation, les finances et les personnes asservies.</p>
+                <p>Jacques meurt de tuberculose en <strong>1848</strong>, à 46 ans, ruiné. Célina tente de maintenir la plantation mais accumule les dettes. La famille vend Oak Alley en 1866 pour moins du tiers de sa valeur d'avant-guerre. Le site est racheté en <strong>1925</strong> par Andrew et Josephine Stewart, qui le restaurent et l'ouvrent aux visiteurs dans les années 1930 — inaugurant le tourisme de plantation en Louisiane.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">⛓️</span>
+                <span class="hsec-label">L'économie sucrière esclavagiste : la réalité derrière l'allée</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Oak Alley produit de la <strong>canne à sucre</strong>, l'une des cultures les plus brutales de l'économie esclavagiste. La canne doit être broyée dans les <strong>24 à 48 heures</strong> après la coupe. La <em>grinding season</em> (oct.–déc.) impose des journées de <strong>18 à 20 heures continues</strong> autour des chaudières. Le taux de mortalité sur les plantations sucrières est significativement plus élevé que sur les plantations cotonnières.</p>
+                <p>Aux grandes heures d'Oak Alley, environ <strong>100 personnes asservies</strong> y vivent et travaillent — recensées dans les registres de la paroisse comme du bétail ou des outils.</p>
+                <div class="hsec-pull" style="border-color:var(--ante)">Depuis 2015, l'exposition permanente <em>«&nbsp;Slavery at Oak Alley&nbsp;»</em> présente les cabanes reconstituées et des récits individuels nominatifs. Modèle de recontextualisation du patrimoine de plantation aux États-Unis.</div>
+              </div>
+            </div>
+          </div>
           <div class="card-note">💬 Prévoir : mansion (~45 min) + cabanes (~30 min) avant le déjeuner créole au restaurant du domaine.</div>
           <div class="card-footer">
             <a class="card-web-link" href="https://www.oakalleyplantation.com/" target="_blank" style="background:var(--ante-bg);color:var(--ante)" onclick="event.stopPropagation()">🌐 Site officiel</a>
@@ -420,7 +506,43 @@ footer{padding:2rem 1rem;font-size:.68rem;color:#9ca3af;text-align:center;border
           </div>
           <div class="card-addr">Jackson Square, New Orleans</div>
           <div class="card-desc">Ancienne Place d'Armes coloniale. Statue équestre Jackson (1856). Premiers immeubles d'appartements des États-Unis (Pontalba, 1849–1851).</div>
-          <div class="card-history"><strong>La bataille de La Nouvelle-Orléans, 8 janvier 1815.</strong> Jackson défait 8 000 soldats britanniques avec 4 700 hommes : milices du Tennessee, deux bataillons de <em>Free Men of Color</em>, guerriers Choctaw, pirates de Laffitte. Ironie : le traité de Gand mettant fin à la guerre est signé 15 jours plus tôt en Belgique — les nouvelles mettent des semaines à traverser l'Atlantique. La statue équestre de Clark Mills (1856) tient en équilibre sur les seuls sabots arrière — prouesse technique rare à l'époque.<br><strong>Micaela Almonester de Pontalba</strong> (1795–1874) : fille de Don Andrés qui finança la reconstruction de la cathédrale, mariée à 15 ans à un noble français, survit à une tentative d'assassinat par son beau-père qui lui arrache deux doigts. Divorcée, elle revient à La Nouvelle-Orléans et fait construire les deux immeubles (1849–1851) — considérés comme les premiers immeubles d'appartements des États-Unis. Le monogramme <strong>«&nbsp;AP&nbsp;»</strong> forgé dans les balustrades est une signature délibérée : ses deux noms, Almonester et Pontalba, pas celui de son mari.</div>
+          <div class="card-history">
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">⚜️</span>
+                <span class="hsec-label">La Place d'Armes : cœur militaire de la colonie</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Bâtie en <strong>1718</strong> selon le plan de l'ingénieur Adrien de Pauger, la Place d'Armes est le centre névralgique de toute ville coloniale française — bordée d'emblée par l'église, le Cabildo et le Presbytère. C'est ici que les milices créoles s'entraînent, que les esclaves en fuite sont exécutés, que les proclamations officielles sont lues.</p>
+                <p>En <strong>1769</strong>, le gouverneur espagnol O'Reilly y fait fusiller les chefs de la rébellion créole contre l'autorité espagnole — premier épisode de résistance armée dans ce qui deviendra les États-Unis.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🎖️</span>
+                <span class="hsec-label">La bataille de La Nouvelle-Orléans, 8 janvier 1815</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Jackson défait 8 000 soldats britanniques avec 4 700 hommes hétéroclites : milices du Tennessee et du Kentucky, <strong>deux bataillons de <em>Free Men of Color</em></strong>, guerriers Choctaw, pirates de Jean Laffitte et réguliers américains. Les Britanniques perdent 2 000 hommes ; les Américains, 71.</p>
+                <p>Ironie de l'histoire : le traité de Gand, mettant fin à la guerre de 1812, avait été signé <strong>15 jours plus tôt</strong> en Belgique. La bataille est militairement inutile mais politiquement décisive — elle ouvre à Jackson la route vers la présidence (1829).</p>
+                <p>La <strong>statue équestre</strong> (1856, Clark Mills) tient en équilibre sur les seuls sabots arrière — l'une des premières statues au monde réussir cet équilibre en bronze plein.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">👩‍💼</span>
+                <span class="hsec-label">Micaela Almonester de Pontalba : une trajectoire hors du commun</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Née en <strong>1795</strong>, Micaela est la fille unique de Don Andrés Almonester, qui finança la reconstruction de la cathédrale et du Cabildo après les incendies de 1788 et 1794. Elle hérite de l'essentiel de sa fortune à 3 ans.</p>
+                <p>Mariée à 15 ans à un noble français, son beau-père lui <strong>tire dessus à bout portant en 1834</strong>, lui arrachant deux doigts de la main gauche, avant de retourner l'arme contre lui-même. Elle survit. Divorcée, elle revient à La Nouvelle-Orléans en 1848 et supervise la construction des deux immeubles Pontalba (1849–1851).</p>
+                <div class="hsec-pull" style="border-color:var(--creole)">Les initiales <strong>«&nbsp;AP&nbsp;»</strong> forgées dans les balustrades sont une affirmation d'identité délibérée : ses deux noms, Almonester et Pontalba — pas celui de son mari. Les Pontalba Buildings sont considérés comme les <strong>premiers immeubles d'appartements des États-Unis</strong>.</div>
+              </div>
+            </div>
+          </div>
           <div class="card-note">💬 Observer les initiales AP dans les ferronneries des balustrades — souvent inaperçu des visiteurs.</div>
           <div class="card-footer">
             <button class="card-map-btn" onclick="event.stopPropagation();flyAndOpen('jackson-sq')">📍 Carte</button>
@@ -454,7 +576,52 @@ footer{padding:2rem 1rem;font-size:.68rem;color:#9ca3af;text-align:center;border
           </div>
           <div class="card-addr">501 Basin St · visite guidée 25 avril après-midi</div>
           <div class="card-desc">Fondé 1789. Tombes hors-sol (<em>oven vaults</em>), sociétés mutuelles créoles, tombe de Marie Laveau.</div>
-          <div class="card-history"><strong>Pourquoi des tombes hors-sol ?</strong> Le delta alluvial sature d'eau à moins d'un mètre — les premiers cercueils remontaient à la surface lors des crues. La règle «&nbsp;un an et un jour&nbsp;» : sous la chaleur subtropicale, les restes sont ensuite repoussés au fond de la niche, libérant la place. Une même niche peut accueillir des dizaines de personnes sur deux siècles. Les <strong>tombes de sociétés mutuelles</strong> (créoles de couleur libres, Italiens, Irlandais) sont les plus imposantes — ces sociétés garantissaient des funérailles dignes à leurs membres.<br><strong>Marie Laveau</strong> (1801–1881), reine du vaudou louisianais : synthèse créole entre vaudou haïtien, catholicisme et pratiques amérindiennes. La tradition des croix «&nbsp;XXX&nbsp;» sur sa tombe est une invention touristique sans origine vaudoue. <strong>Homer Plessy</strong> (<em>Plessy v. Ferguson</em>, 1896) y est également inhumé. Visite en groupe guidé agréé obligatoire depuis 2015 (dégradations sur la tombe Laveau).</div>
+          <div class="card-history">
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🏺</span>
+                <span class="hsec-label">Pourquoi des tombes hors-sol ? La géologie louisianaise</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>La Nouvelle-Orléans repose sur un delta alluvial : le sol est du limon saturé d'eau à <strong>moins d'un mètre de profondeur</strong>. Les premières tentatives d'enterrement souterrain en 1721 se soldent par des cercueils remontant à la surface lors des inondations.</p>
+                <p>Les <strong>niches hors-sol (<em>oven vaults</em>)</strong>, héritées de la tradition espagnole, s'imposent : briques maçonnées enduites de plâtre, empilées comme un four à pain, ~60×60×180 cm. La règle «&nbsp;un an et un jour&nbsp;» : sous la chaleur subtropicale, la décomposition permet de repousser les restes au fond de la niche pour libérer la place. Une même niche peut avoir accueilli des dizaines de personnes sur deux siècles.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🤝</span>
+                <span class="hsec-label">Les tombes de sociétés : solidarité communautaire en pierre</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>Le cimetière est dominé par de grandes <strong>tombes de sociétés mutuelles</strong> — constructions imposantes pouvant accueillir des dizaines de membres. Ces sociétés (<em>benevolent societies</em>) sont l'épine dorsale de la communauté créole du XIXᵉ siècle : elles garantissent des funérailles dignes à leurs membres.</p>
+                <p>On y trouve des sociétés italiennes, portugaises, irlandaises, et surtout des <strong>sociétés de couleur libres</strong> — ces Créoles de couleur qui formaient une classe sociale à part, ni esclaves ni citoyens à part entière, et développèrent leurs propres réseaux de solidarité et d'éducation.</p>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">🔮</span>
+                <span class="hsec-label">Marie Laveau : reine du vaudou louisianais</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p><strong>Marie Laveau</strong> (1801–1881) : synthèse créole entre vaudou haïtien hérité des esclaves de Saint-Domingue, catholicisme romain et pratiques amérindiennes. Coiffeuse de profession, elle accède aux maisons des familles blanches les plus influentes — source précieuse de renseignements qui alimentent son aura de «&nbsp;sorcière omnisciente&nbsp;».</p>
+                <p>Sa fille, <strong>Marie Laveau II</strong>, reprend le rôle si bien que les deux femmes se confondent dans la mémoire collective. La tombe «&nbsp;Marie Laveau&nbsp;» est vraisemblablement celle de la fille, voire d'une tierce personne — les archives sont incertaines.</p>
+                <div class="hsec-pull" style="border-color:var(--creole)">La tradition des <strong>croix «&nbsp;XXX&nbsp;»</strong> tracées sur la tombe est une invention touristique du XXᵉ siècle sans origine vaudoue authentique. Elle a causé des dégâts importants justifiant la protection actuelle. <strong>Homer Plessy</strong> (<em>Plessy v. Ferguson</em>, 1896) est également inhumé ici.</div>
+              </div>
+            </div>
+            <div class="hsec">
+              <div class="hsec-head" onclick="event.stopPropagation();hToggle(this)">
+                <span class="hsec-icon">👁️</span>
+                <span class="hsec-label">Visite guidée obligatoire depuis 2015 — pourquoi ?</span>
+                <span class="hsec-arrow">▶</span>
+              </div>
+              <div class="hsec-body">
+                <p>En 2015, l'Archidiocèse ferme le cimetière aux visites libres après une série de dégradations — notamment la tombe Laveau couverte de peinture rose effaçant les inscriptions. La visite en groupe guidé agréé (opérateur NOLWT, 941 Decatur St) est désormais la seule façon d'entrer. Réserver à l'avance.</p>
+              </div>
+            </div>
+          </div>
           <div class="card-note">💬 Visite guidée NOLWT — réserver à l'avance. Itinéraire : Royal St → St. Louis St → cimetière → retour par Conti St → Royal St.</div>
           <div class="card-footer">
             <a class="card-web-link" href="https://www.nolwt.com/" target="_blank" style="background:var(--creole-bg);color:var(--creole)" onclick="event.stopPropagation()">🌐 NOLWT</a>
@@ -693,33 +860,39 @@ var COLORS={cwar:'#d46a6a',ante:'#c9a84c',colonial:'#7eb3e8',creole:'#c09ee0',ri
 var CAT_LABELS={cwar:'⚔️ Guerre de Sécession',ante:'🌿 Antebellum',colonial:'⚜️ Époque coloniale',creole:'🏛️ Héritage créole',river:'🌊 Fleuve',food:'🍽️ Food & étapes'};
 
 var PLACES=[
-  {id:'vick-vc',    cat:'cwar',     lat:32.3452,lng:-90.8733,name:'Vicksburg NMP — Visitor Center',    desc:'Point de départ — orientation, maquette du siège, film d\'introduction (20 min).',url:'https://www.nps.gov/vick/'},
-  {id:'vick-golyer',cat:'cwar',     lat:32.3489,lng:-90.8802,name:'Battery De Golyer',                 desc:'Position d\'artillerie Union — panorama sur les lignes de siège.',url:null},
-  {id:'vick-wi',    cat:'cwar',     lat:32.3510,lng:-90.8770,name:'Wisconsin Memorial',                desc:'Un des 1 330 monuments d\'États du parc — coupole en granit blanc.',url:null},
-  {id:'uss-cairo',  cat:'cwar',     lat:32.3425,lng:-90.8715,name:'USS Cairo — Gunboat & Museum',      desc:'Seul ironclad de la guerre civile conservé. Coulé 1862, renfloué 1964.',url:null},
-  {id:'oak-alley',  cat:'ante',     lat:30.0065,lng:-90.7757,name:'Oak Alley Plantation',              desc:'Plantation sucrière 1839. 28 chênes centenaires. Exposition esclavage.',url:'https://www.oakalleyplantation.com/'},
-  {id:'jeanne-arc', cat:'colonial', lat:29.9582,lng:-90.0637,name:'Statue de Jeanne d\'Arc',           desc:'Offerte par la France en 1972, symbole du lien franco-louisianais.',url:null},
-  {id:'cathedrale', cat:'colonial', lat:29.9576,lng:-90.0634,name:'Cathédrale Saint-Louis',            desc:'Plus ancienne cathédrale catholique en activité continue aux États-Unis.',url:'https://stlouiscathedral.org/'},
-  {id:'chartres',   cat:'colonial', lat:29.9558,lng:-90.0625,name:'Chartres Street — axe fondateur',   desc:'Cathédrale, Cabildo, Presbytère, Ursulines — axe du pouvoir colonial.',url:null},
-  {id:'ursuline',   cat:'colonial', lat:29.9533,lng:-90.0591,name:'Old Ursuline Convent Museum',       desc:'Plus vieux bâtiment de la vallée du Mississippi (1745–1752).',url:'https://www.ursulineconventmuseum.com/'},
-  {id:'villa-convento',cat:'colonial',lat:29.9539,lng:-90.0600,name:'Hotel Villa Convento',            desc:'Bâtiment Greek Revival 1833, tissu urbain créole préservé.',url:'https://www.villaconvento.com/'},
-  {id:'pirates-alley',cat:'colonial',lat:29.9584,lng:-90.0644,name:'Pirates Alley',                   desc:'Passage longeant la cathédrale — légende flibustière, résidence de Faulkner.',url:null},
-  {id:'faulkner',   cat:'colonial', lat:29.9586,lng:-90.0647,name:'Faulkner House Books',              desc:'Appartement de Faulkner (1925), librairie spécialisée littérature du Sud.',url:'https://www.faulknerhouse.net/'},
-  {id:'st-anthony', cat:'colonial', lat:29.9573,lng:-90.0632,name:"St. Anthony's Garden",             desc:'Jardin derrière la cathédrale — anciens duels d\'honneur créoles.',url:null},
-  {id:'jackson-sq', cat:'creole',   lat:29.9575,lng:-90.0634,name:'Jackson Square & Pontalba',         desc:'Place d\'Armes coloniale. Statue Jackson 1856. Premiers apparts des États-Unis.',url:null},
-  {id:'beauregard', cat:'creole',   lat:29.9536,lng:-90.0590,name:'Beauregard-Keyes House',            desc:'Demeure Greek Revival 1826 — Beauregard confédéré, Frances P. Keyes.',url:'https://bkhouse.org/'},
-  {id:'cemetery1',  cat:'creole',   lat:29.9664,lng:-90.0714,name:'St. Louis Cemetery No. 1',          desc:'1789 — tombes hors-sol, sociétés mutuelles, tombe de Marie Laveau.',url:'https://www.nolwt.com/'},
-  {id:'royal-st',   cat:'creole',   lat:29.9558,lng:-90.0650,name:'Royal Street — esthétique créole',  desc:'Balcons en fer forgé, antiquaires, demeures pastel.',url:null},
-  {id:'bourbon',    cat:'creole',   lat:29.9570,lng:-90.0694,name:'Bourbon Street',                    desc:'Axe festif — berceau du jazz, aujourd\'hui strip touristique.',url:null},
-  {id:'wash-artillery',cat:'river', lat:29.9583,lng:-90.0621,name:'Washington Artillery Park',         desc:'Meilleure vue sur le Mississippi depuis le Vieux Carré.',url:null},
-  {id:'french-market',cat:'river',  lat:29.9560,lng:-90.0602,name:'French Market',                    desc:'Marché en activité depuis 1791 — un des plus anciens des États-Unis.',url:'https://www.frenchmarket.org/'},
-  {id:'decatur',    cat:'river',    lat:29.9568,lng:-90.0617,name:'Decatur Street — front du port',    desc:'Artère du port colonial, premier levee de Louisiane (1724).',url:null},
-  {id:'canal-st',   cat:'river',    lat:29.9600,lng:-90.0730,name:'Canal Street — ligne de fracture',  desc:'Frontière créole / américain post-1803. Origine de «&nbsp;neutral ground&nbsp;».',url:null},
-  {id:'kfc-vick',   cat:'food',     lat:32.3410,lng:-90.8601,name:'KFC — Vicksburg',                  desc:'Pause déjeuner avant la visite du parc national.',url:null},
-  {id:'whataburger',cat:'food',     lat:32.2988,lng:-90.1848,name:'Whataburger — Jackson MS',          desc:'Repas du soir, étape nuit Best Western Plus Jackson.',url:null},
-  {id:'oakalley-resto',cat:'food',  lat:30.0070,lng:-90.7750,name:'Restaurant Oak Alley',              desc:'Cuisine créole louisianaise — gumbo, étouffée, bread pudding.',url:'https://www.oakalleyplantation.com/restaurant'},
-  {id:'streetcar-cafe',cat:'food',  lat:29.9485,lng:-90.0731,name:'Streetcar Café',                   desc:'Dîner premier soir, 312 St Charles Ave — en face de l\'InterContinental.',url:null},
-  {id:'cafe-beignet',cat:'food',    lat:29.9568,lng:-90.0693,name:'Café Beignet',                      desc:'Beignets louisianais + café au lait chicorée. Alternative sans file à Café Du Monde.',url:null}
+  // ── Guerre de Sécession ──
+  {id:'vick-vc',    cat:'cwar',     lat:32.34406,lng:-90.85128,name:'Vicksburg NMP — Visitor Center',    desc:'Point de départ — orientation, maquette du siège, film d\'introduction (20 min).',url:'https://www.nps.gov/vick/'},
+  {id:'vick-golyer',cat:'cwar',     lat:32.35507,lng:-90.84060,name:'Battery De Golyer',                 desc:'Position d\'artillerie Union — panorama sur les lignes de siège.',url:null},
+  {id:'vick-wi',    cat:'cwar',     lat:32.36546,lng:-90.84035,name:'Wisconsin Memorial',                desc:'Un des 1 330 monuments d\'États du parc — coupole en granit blanc.',url:null},
+  {id:'uss-cairo',  cat:'cwar',     lat:32.37630,lng:-90.86667,name:'USS Cairo — Gunboat & Museum',      desc:'Seul ironclad de la guerre civile conservé. Coulé 1862, renfloué 1964.',url:null},
+  // ── Antebellum ──
+  {id:'oak-alley',  cat:'ante',     lat:30.00395,lng:-90.77641,name:'Oak Alley Plantation',              desc:'Plantation sucrière 1839. 28 chênes centenaires. Exposition esclavage.',url:'https://www.oakalleyplantation.com/'},
+  // ── Époque coloniale ──
+  {id:'jeanne-arc', cat:'colonial', lat:29.95983,lng:-90.06010,name:'Statue de Jeanne d\'Arc',           desc:'Offerte par la France en 1972, symbole du lien franco-louisianais.',url:null},
+  {id:'cathedrale', cat:'colonial', lat:29.95783,lng:-90.06351,name:'Cathédrale Saint-Louis',            desc:'Plus ancienne cathédrale catholique en activité continue aux États-Unis.',url:'https://stlouiscathedral.org/'},
+  {id:'chartres',   cat:'colonial', lat:29.95847,lng:-90.06293,name:'Chartres Street — axe fondateur',   desc:'Cathédrale, Cabildo, Presbytère, Ursulines — axe du pouvoir colonial.',url:null},
+  {id:'ursuline',   cat:'colonial', lat:29.96081,lng:-90.06049,name:'Old Ursuline Convent Museum',       desc:'Plus vieux bâtiment de la vallée du Mississippi (1745–1752).',url:'https://www.ursulineconventmuseum.com/'},
+  {id:'villa-convento',cat:'colonial',lat:29.96078,lng:-90.06140,name:'Hotel Villa Convento',            desc:'Bâtiment Greek Revival 1833, tissu urbain créole préservé.',url:'https://www.villaconvento.com/'},
+  {id:'pirates-alley',cat:'colonial',lat:29.95816,lng:-90.06429,name:'Pirates Alley',                   desc:'Passage longeant la cathédrale — légende flibustière, résidence de Faulkner.',url:null},
+  {id:'faulkner',   cat:'colonial', lat:29.95805,lng:-90.06416,name:'Faulkner House Books',              desc:'Appartement de Faulkner (1925), librairie spécialisée littérature du Sud.',url:'https://www.faulknerhouse.net/'},
+  {id:'st-anthony', cat:'colonial', lat:29.95783,lng:-90.06330,name:"St. Anthony's Garden",             desc:'Jardin derrière la cathédrale — anciens duels d\'honneur créoles.',url:null},
+  // ── Héritage créole ──
+  {id:'jackson-sq', cat:'creole',   lat:29.95741,lng:-90.06290,name:'Jackson Square & Pontalba',         desc:'Place d\'Armes coloniale. Statue Jackson 1856. Premiers apparts des États-Unis.',url:null},
+  {id:'beauregard', cat:'creole',   lat:29.96104,lng:-90.06089,name:'Beauregard-Keyes House',            desc:'Demeure Greek Revival 1826 — Beauregard confédéré, Frances P. Keyes.',url:'https://bkhouse.org/'},
+  {id:'cemetery1',  cat:'creole',   lat:29.95916,lng:-90.07112,name:'St. Louis Cemetery No. 1',          desc:'1789 — tombes hors-sol, sociétés mutuelles, tombe de Marie Laveau.',url:'https://www.nolwt.com/'},
+  {id:'royal-st',   cat:'creole',   lat:29.95381,lng:-90.06857,name:'Royal Street — esthétique créole',  desc:'Balcons en fer forgé, antiquaires, demeures pastel.',url:null},
+  {id:'bourbon',    cat:'creole',   lat:29.95587,lng:-90.06843,name:'Bourbon Street',                    desc:'Axe festif — berceau du jazz, aujourd\'hui strip touristique.',url:null},
+  // ── Fleuve & front d'eau ──
+  {id:'wash-artillery',cat:'river', lat:29.95696,lng:-90.06216,name:'Washington Artillery Park',         desc:'Meilleure vue sur le Mississippi depuis le Vieux Carré.',url:null},
+  {id:'french-market',cat:'river',  lat:29.95978,lng:-90.05958,name:'French Market',                    desc:'Marché en activité depuis 1791 — un des plus anciens des États-Unis.',url:'https://www.frenchmarket.org/'},
+  {id:'decatur',    cat:'river',    lat:29.95343,lng:-90.06585,name:'Decatur Street — front du port',    desc:'Artère du port colonial, premier levee de Louisiane (1724).',url:null},
+  {id:'canal-st',   cat:'river',    lat:29.95282,lng:-90.06874,name:'Canal Street — ligne de fracture',  desc:'Frontière créole / américain post-1803. Origine de «&nbsp;neutral ground&nbsp;».',url:null},
+  // ── Food & étapes ──
+  {id:'kfc-vick',   cat:'food',     lat:32.34650,lng:-90.85640,name:'KFC — Vicksburg',                  desc:'Pause déjeuner avant la visite du parc national.',url:null},
+  {id:'whataburger',cat:'food',     lat:32.30432,lng:-90.16870,name:'Whataburger — Jackson MS',          desc:'Repas du soir, étape nuit Best Western Plus Jackson.',url:null},
+  {id:'oakalley-resto',cat:'food',  lat:30.00395,lng:-90.77641,name:'Restaurant Oak Alley',              desc:'Cuisine créole louisianaise — gumbo, étouffée, bread pudding.',url:'https://www.oakalleyplantation.com/restaurant'},
+  {id:'streetcar-cafe',cat:'food',  lat:29.95118,lng:-90.07001,name:'Streetcar Café',                   desc:'Dîner premier soir, 312 St Charles Ave — en face de l\'InterContinental.',url:null},
+  {id:'cafe-beignet',cat:'food',    lat:29.95587,lng:-90.06843,name:'Café Beignet',                      desc:'Beignets louisianais + café au lait chicorée. Alternative sans file à Café Du Monde.',url:null}
 ];
 
 var markers={},allMarkers=[],catCounters={};
@@ -768,6 +941,13 @@ function applyFilter(cat,btn){
   }else{
     map.flyTo([DEFAULT_LAT,DEFAULT_LNG],DEFAULT_ZOOM,{duration:0.5});
   }
+}
+
+function hToggle(head){
+  var body=head.nextElementSibling;
+  var arrow=head.querySelector('.hsec-arrow');
+  var open=body.classList.toggle('open');
+  arrow.classList.toggle('open',open);
 }
 
 window.addEventListener('scroll',function(){
